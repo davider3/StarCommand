@@ -7,24 +7,24 @@
 
 
 #include "xc.h"
-#pragma config FNOSC = LPRC
+#pragma config FNOSC = LPRC //31 kHz oscillator
 
-#define CW 1
-#define CCW 0
+#define CW 0
+#define CCW 1
 #define REST 0
 #define ONEREV 200
 #define ONESEC 1938
 #define WHEELDIAMETER 69.5 //mm
 #define TRACKWIDTH 221 //mm
-#define TURNSPEED 77
+#define TURNSPEED 75
+#define STRAIGHTSPEED 75
 
 //GLOBAL VARIABLES
 int OC1Steps = 0;
 int OC2Steps = 0;
 int OC3Steps = 0;
-float turnCoeff = TRACKWIDTH / (1.8 * WHEELDIAMETER);
+int turnCoeff = TRACKWIDTH / (1.8 * WHEELDIAMETER);
 int stepsToTake = 0;
-int turnDir = 0;
 
 //FUNCTION PROTOTYPES
 void tankTurn(int dir, int degrees);
@@ -39,50 +39,52 @@ int main(void) {
     setupSteppers();
     
     //SET UP PARAMETERS FOR STATE MACHINE
-    enum {RIGHT, TURNAROUND, STRAIGHT} state;
-    enum {RIGHT, TURNAROUND} prevState;
+    enum {STRAIGHT1, RIGHT, STRAIGHT2, TURNAROUND} state;
     
-    state = STRAIGHT;
-    prevState = TURNAROUND;
+    state = STRAIGHT1;
    
     //TIMER
     _TON = 1;       // Turn Timer1 on
-    _TCKPS = 0b01;  // Chose prescaling
+    _TCKPS = 0b01;  // Chose pre-scaling as 8
     _TCS = 0;       // Internal clock source (FOSC/2)
     TMR1 = 0;       // Reset Timer1
     
     while(1){
         switch(state){
             
-            case STRAIGHT:
-                
+            case STRAIGHT1:
+                driveStraight();
                 
                 if(TMR1 >= 2*ONESEC){
-                    if(prevState == RIGHT){
-                        state = TURNAROUND;
-                    }else if(prevState == TURNAROUND){
-                        state = RIGHT;
-                    }
+                    state = RIGHT;
                 }
                 break;
                 
             case RIGHT:
-                OC2Steps = 0;
                 tankTurn(90,CW);
                 
                 if(OC2Steps >= stepsToTake){
-                    state = STRAIGHT;
-                    prevState = RIGHT;
+                    stepsToTake = 0;
+                    state = STRAIGHT2;
+                    TMR1 = 0;
                 }
                 break;
                 
+            case STRAIGHT2:
+                driveStraight();
+                
+                if(TMR1 >= 2*ONESEC){
+                    state = TURNAROUND;
+                }                
+                break;
+                
             case TURNAROUND:
-                OC2Steps = 0;
                 tankTurn(180,CCW);
                 
                 if(OC2Steps >= stepsToTake){
-                    state = STRAIGHT;
-                    prevState = TURNAROUND;
+                    stepsToTake = 0;
+                    state = STRAIGHT1;
+                    TMR1 = 0;
                 }
                 break;
         }
@@ -108,9 +110,7 @@ void __attribute__((interrupt, no_auto_psv)) _OC3Interrupt(void){
 }
 void tankTurn(int dir, int degrees){
     stepsToTake = turnCoeff * degrees;
-    
-    turnDir = dir;
-    
+
     //TURN ON INTERRUPT
     _OC2IE = 1;
     
@@ -121,8 +121,8 @@ void tankTurn(int dir, int degrees){
     OC3R = TURNSPEED/2;
     
     //WRITE TO DIRECTION PINS
-    _LATA0 = turnDir;
-    _LATA1 = turnDir;
+    _LATA0 = dir;
+    _LATA1 = dir;
 }
 void setupSteppers(){
     //SET UP STEPPER MOTORS
@@ -155,5 +155,18 @@ void setupSteppers(){
     _ANSA0 = 0;
     _ANSA1 = 0;
     _TRISA1 = 0;
+    
+}
+void driveStraight(){
+    
+    //SET PERIOD AND DUTY CYCLE
+    OC2RS = STRAIGHTSPEED;
+    OC2R = STRAIGHTSPEED/2;
+    OC3RS = STRAIGHTSPEED;
+    OC3R = STRAIGHTSPEED/2;
+    
+    //WRITE TO DIRECTION PINS
+    _LATA0 = 1;
+    _LATA1 = 0;
     
 }
