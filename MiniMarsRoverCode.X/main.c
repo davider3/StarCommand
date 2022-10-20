@@ -19,12 +19,14 @@
 #define TURNSPEED 75
 #define STRAIGHTSPEED 75
 
+
 //GLOBAL VARIABLES
 int OC1Steps = 0;
 int OC2Steps = 0;
 int OC3Steps = 0;
-int turnCoeff = TRACKWIDTH / (1.8 * WHEELDIAMETER);
+float turnCoeff = TRACKWIDTH / (1.8 * WHEELDIAMETER); //1.7666
 int stepsToTake = 0;
+
 
 //FUNCTION PROTOTYPES
 void tankTurn(int dir, int degrees);
@@ -111,7 +113,7 @@ void __attribute__((interrupt, no_auto_psv)) _OC3Interrupt(void){
     
     ++OC3Steps;
 }
-void tankTurn(int dir, int degrees){
+void tankTurn(int degrees, int dir){
     
     stepsToTake = turnCoeff * degrees;
 
