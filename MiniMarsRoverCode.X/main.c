@@ -49,42 +49,45 @@ int main(void) {
     _TCS = 0;       // Internal clock source (FOSC/2)
     TMR1 = 0;       // Reset Timer1
     
+    
+    driveStraight();
+    
     while(1){
         switch(state){
             
             case STRAIGHT1:
-                driveStraight();
                 
                 if(TMR1 >= 2*ONESEC){
                     state = RIGHT;
+                    tankTurn(90,CW);
                 }
                 break;
                 
             case RIGHT:
-                tankTurn(90,CW);
                 
                 if(OC2Steps >= stepsToTake){
-                    stepsToTake = 0;
                     state = STRAIGHT2;
                     TMR1 = 0;
+                    driveStraight();
+                    _OC2IE = 0;
                 }
                 break;
                 
             case STRAIGHT2:
-                driveStraight();
                 
-                if(TMR1 >= 2*ONESEC){
+                if(TMR1 >= 4*ONESEC){
                     state = TURNAROUND;
+                    tankTurn(180,CCW);
                 }                
                 break;
                 
             case TURNAROUND:
-                tankTurn(180,CCW);
                 
                 if(OC2Steps >= stepsToTake){
-                    stepsToTake = 0;
                     state = STRAIGHT1;
                     TMR1 = 0;
+                    driveStraight();
+                    _OC2IE = 0;
                 }
                 break;
         }
@@ -109,10 +112,13 @@ void __attribute__((interrupt, no_auto_psv)) _OC3Interrupt(void){
     ++OC3Steps;
 }
 void tankTurn(int dir, int degrees){
+    
     stepsToTake = turnCoeff * degrees;
 
     //TURN ON INTERRUPT
     _OC2IE = 1;
+    
+    OC2Steps = 0;
     
     //SET PERIOD AND DUTY CYCLE
     OC2RS = TURNSPEED;

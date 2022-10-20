@@ -65,10 +65,10 @@ Default Scalar Model: Small
 section                    address   length (PC units)   length (bytes) (dec)
 -------                    -------   -----------------   --------------------
 .text                        0x200               0x104           0x186  (390)
-.text                        0x304               0x14e           0x1f5  (501)
-.dinit                       0x452                0x10            0x18  (24)
+.text                        0x304               0x152           0x1fb  (507)
+.dinit                       0x456                0x10            0x18  (24)
 
-                 Total "program" memory used (bytes):          0x393  (915) 5%
+                 Total "program" memory used (bytes):          0x399  (921) 5%
 
 
 "data" Memory  [Origin = 0x800, Length = 0x800]
@@ -120,9 +120,9 @@ External Symbols in Program Memory (by address):
                   0x0002ec                  __OC3Interrupt
                   0x0002fe                  __DefaultInterrupt
                   0x000304                  _main
-                  0x000382                  _tankTurn
-                  0x0003d2                  _setupSteppers
-                  0x000438                  _driveStraight
+                  0x000384                  _tankTurn
+                  0x0003d6                  _setupSteppers
+                  0x00043c                  _driveStraight
 
 External Symbols in Program Memory (by name):
 
@@ -134,10 +134,10 @@ External Symbols in Program Memory (by name):
                   0x000252                  __data_init_standard
                   0x00023c                  __psv_init
                   0x000200                  __resetPRI
-                  0x000438                  _driveStraight
+                  0x00043c                  _driveStraight
                   0x000304                  _main
-                  0x0003d2                  _setupSteppers
-                  0x000382                  _tankTurn
+                  0x0003d6                  _setupSteppers
+                  0x000384                  _tankTurn
 
 Memory Configuration
 
@@ -253,9 +253,9 @@ __FDS
  *(.debug_abbrev)
  .debug_abbrev    0x000000        0x173 build/default/production/main.o
 
-.debug_line       0x000000        0x16e
+.debug_line       0x000000        0x170
  *(.debug_line)
- .debug_line      0x000000        0x16e build/default/production/main.o
+ .debug_line      0x000000        0x170 build/default/production/main.o
 
 .debug_frame      0x000000         0xe8
  *(.debug_frame)
@@ -945,12 +945,12 @@ __c30_signature
  .ivt._OC3Interrupt
                   0x000046          0x2 build/default/production/main.o
 
-.text             0x000304        0x14e
- .text            0x000304        0x14e build/default/production/main.o
+.text             0x000304        0x152
+ .text            0x000304        0x152 build/default/production/main.o
                   0x000304                  _main
-                  0x000382                  _tankTurn
-                  0x0003d2                  _setupSteppers
-                  0x000438                  _driveStraight
+                  0x000384                  _tankTurn
+                  0x0003d6                  _setupSteppers
+                  0x00043c                  _driveStraight
 
-.dinit            0x000452         0x10
- .dinit           0x000452         0x10 data_init
+.dinit            0x000456         0x10
+ .dinit           0x000456         0x10 data_init
