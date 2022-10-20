@@ -6,7 +6,7 @@
             <name>MiniMarsRoverCode</name>
             <creation-uuid>2c056ea0-59d8-4262-842d-73924fedbd79</creation-uuid>
             <make-project-type>0</make-project-type>
-            <c-extensions/>
+            <c-extensions>c</c-extensions>
             <cpp-extensions/>
             <header-extensions/>
             <asminc-extensions/>
