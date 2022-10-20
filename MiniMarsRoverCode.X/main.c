@@ -12,12 +12,11 @@
 #define CW 1
 #define CCW 0
 #define REST 0
-#define FASTSTEPS 38
-#define SLOWSTEPS 77
 #define ONEREV 200
 #define ONESEC 1938
 #define WHEELDIAMETER 69.5 //mm
 #define TRACKWIDTH 221 //mm
+#define TURNSPEED 77
 
 //GLOBAL VARIABLES
 int OC1Steps = 0;
@@ -30,37 +29,14 @@ int turnDir = 0;
 //FUNCTION PROTOTYPES
 void tankTurn(int dir, int degrees);
 void driveStraight();
+void setupSteppers();
 void __attribute__((interrupt, no_auto_psv)) _OC1Interrupt(void);
 void __attribute__((interrupt, no_auto_psv)) _OC2Interrupt(void);
 void __attribute__((interrupt, no_auto_psv)) _OC3Interrupt(void);
 
 int main(void) {
     
-    //SET UP STEPPER MOTORS
-    //RIGHT
-    OC2CON1 = 0;
-    OC2CON2 = 0;
-    OC2CON1bits.OCTSEL = 0b111;
-    OC2CON2bits.SYNCSEL = 0x1F;
-    OC2CON2bits.OCTRIG = 0;
-    OC2CON1bits.OCM = 0b110;
-    
-    _OC2IP = 4; // Select OCx interrupt priority
-    _OC2IE = 1; // Enable OCx interrupt
-    _OC2IF = 0; // Clear OCx interrupt flag
-    
-    //LEFT
-    OC3CON1 = 0;
-    OC3CON2 = 0;
-    OC3CON1bits.OCTSEL = 0b111;
-    OC3CON2bits.SYNCSEL = 0x1F;
-    OC3CON2bits.OCTRIG = 0;
-    OC3CON1bits.OCM = 0b110;
-    
-    _OC3IP = 4; // Select OCx interrupt priority
-    _OC3IE = 1; // Enable OCx interrupt
-    _OC3IF = 0; // Clear OCx interrupt flag
-    
+    setupSteppers();
     
     //SET UP PARAMETERS FOR STATE MACHINE
     enum {RIGHT, TURNAROUND, STRAIGHT} state;
@@ -91,8 +67,8 @@ int main(void) {
                 break;
                 
             case RIGHT:
-                
-                
+                OC2Steps = 0;
+                tankTurn(90,CW);
                 
                 if(OC2Steps >= stepsToTake){
                     state = STRAIGHT;
@@ -101,7 +77,8 @@ int main(void) {
                 break;
                 
             case TURNAROUND:
-                
+                OC2Steps = 0;
+                tankTurn(180,CCW);
                 
                 if(OC2Steps >= stepsToTake){
                     state = STRAIGHT;
@@ -133,4 +110,50 @@ void tankTurn(int dir, int degrees){
     stepsToTake = turnCoeff * degrees;
     
     turnDir = dir;
+    
+    //TURN ON INTERRUPT
+    _OC2IE = 1;
+    
+    //SET PERIOD AND DUTY CYCLE
+    OC2RS = TURNSPEED;
+    OC2R = TURNSPEED/2;
+    OC3RS = TURNSPEED;
+    OC3R = TURNSPEED/2;
+    
+    //WRITE TO DIRECTION PINS
+    _LATA0 = turnDir;
+    _LATA1 = turnDir;
+}
+void setupSteppers(){
+    //SET UP STEPPER MOTORS
+    //RIGHT
+    OC2CON1 = 0;
+    OC2CON2 = 0;
+    OC2CON1bits.OCTSEL = 0b111;
+    OC2CON2bits.SYNCSEL = 0x1F;
+    OC2CON2bits.OCTRIG = 0;
+    OC2CON1bits.OCM = 0b110;
+    
+    _OC2IP = 4; // Select OCx interrupt priority
+    _OC2IE = 1; // Enable OCx interrupt
+    _OC2IF = 0; // Clear OCx interrupt flag
+    
+    //LEFT
+    OC3CON1 = 0;
+    OC3CON2 = 0;
+    OC3CON1bits.OCTSEL = 0b111;
+    OC3CON2bits.SYNCSEL = 0x1F;
+    OC3CON2bits.OCTRIG = 0;
+    OC3CON1bits.OCM = 0b110;
+    
+    _OC3IP = 4; // Select OCx interrupt priority
+    _OC3IE = 1; // Enable OCx interrupt
+    _OC3IF = 0; // Clear OCx interrupt flag
+    
+    //SET UP DIRECTION PINS
+    _TRISA0 = 0;
+    _ANSA0 = 0;
+    _ANSA1 = 0;
+    _TRISA1 = 0;
+    
 }
