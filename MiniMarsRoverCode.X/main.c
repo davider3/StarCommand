@@ -29,9 +29,11 @@ int stepsToTake = 0;
 
 
 //FUNCTION PROTOTYPES
-void tankTurn(int dir, int degrees);
+void tankTurn(int degrees, int dir);
 void driveStraight();
 void setupSteppers();
+void setupQRDs();
+void setupTimer();
 void __attribute__((interrupt, no_auto_psv)) _OC1Interrupt(void);
 void __attribute__((interrupt, no_auto_psv)) _OC2Interrupt(void);
 void __attribute__((interrupt, no_auto_psv)) _OC3Interrupt(void);
@@ -39,19 +41,12 @@ void __attribute__((interrupt, no_auto_psv)) _OC3Interrupt(void);
 int main(void) {
     
     setupSteppers();
+    setupQRDs();
+    setupTimer();
     
     //SET UP PARAMETERS FOR STATE MACHINE
     enum {STRAIGHT1, RIGHT, STRAIGHT2, TURNAROUND} state;
-    
     state = STRAIGHT1;
-   
-    //TIMER
-    _TON = 1;       // Turn Timer1 on
-    _TCKPS = 0b01;  // Chose pre-scaling as 8
-    _TCS = 0;       // Internal clock source (FOSC/2)
-    TMR1 = 0;       // Reset Timer1
-    
-    
     driveStraight();
     
     while(1){
@@ -132,8 +127,20 @@ void tankTurn(int degrees, int dir){
     _LATA0 = dir;
     _LATA1 = dir;
 }
+void driveStraight(){
+    
+    //SET PERIOD AND DUTY CYCLE
+    OC2RS = STRAIGHTSPEED;
+    OC2R = STRAIGHTSPEED/2;
+    OC3RS = STRAIGHTSPEED;
+    OC3R = STRAIGHTSPEED/2;
+    
+    //WRITE TO DIRECTION PINS
+    _LATA0 = 1;
+    _LATA1 = 0;
+    
+}
 void setupSteppers(){
-    //SET UP STEPPER MOTORS
     //RIGHT
     OC2CON1 = 0;
     OC2CON2 = 0;
@@ -165,16 +172,12 @@ void setupSteppers(){
     _TRISA1 = 0;
     
 }
-void driveStraight(){
-    
-    //SET PERIOD AND DUTY CYCLE
-    OC2RS = STRAIGHTSPEED;
-    OC2R = STRAIGHTSPEED/2;
-    OC3RS = STRAIGHTSPEED;
-    OC3R = STRAIGHTSPEED/2;
-    
-    //WRITE TO DIRECTION PINS
-    _LATA0 = 1;
-    _LATA1 = 0;
+void setupTimer(){
+    _TON = 1;       // Turn Timer1 on
+    _TCKPS = 0b01;  // Chose pre-scaling as 8
+    _TCS = 0;       // Internal clock source (FOSC/2)
+    TMR1 = 0;       // Reset Timer1
+}
+void setupQRDs(){
     
 }

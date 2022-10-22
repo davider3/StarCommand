@@ -13,6 +13,7 @@
                    displayName="Source Files"
                    projectFiles="true">
       <itemPath>main.c</itemPath>
+      <itemPath>prevCode.txt</itemPath>
     </logicalFolder>
     <logicalFolder name="ExternalFiles"
                    displayName="Important Files"
@@ -196,6 +197,9 @@
       <PICkit3PlatformTool>
         <property key="firmware.download.all" value="false"/>
       </PICkit3PlatformTool>
+      <Tool>
+        <property key="firmware.download.all" value="false"/>
+      </Tool>
     </conf>
   </confs>
 </configurationDescriptor>
