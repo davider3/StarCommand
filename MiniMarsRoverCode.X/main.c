@@ -71,6 +71,11 @@ int main(void) {
             
             case STRAIGHT:
                 
+                if(rightQRD() && midQRD() && !leftQRD()){
+                    slightRight();
+                    state = SLIGHTRIGHT;
+                }
+                
                 break;
                 
             case SLIGHTRIGHT:
@@ -154,6 +159,9 @@ void setupTimer(){
     TMR1 = 0;       // Reset Timer1
 }
 void setupQRDs(){
+    //RIGHT NOW WE ARE PLANNING ON USING DIGITAL PINS FOR THE QRDS BUT WE 
+    //MIGHT HAVE TO SWITCH TO ANALOG IF THEY CONTINUE TO GIVE ME TROUBLE
+    
     //RIGHT QRD
     _TRISA3 = 1;
     _ANSA3 = 0;
@@ -189,18 +197,30 @@ void tankTurn(int degrees, int dir){
 void driveStraight(){
     
     //SET PERIOD AND DUTY CYCLE
-    OC2RS = STRAIGHTSPEED;
-    OC2R = STRAIGHTSPEED/2;
-    OC3RS = STRAIGHTSPEED;
-    OC3R = STRAIGHTSPEED/2;
+    OC2RS = FAST;
+    OC2R = FAST/2;
+    OC3RS = FAST;
+    OC3R = FAST/2;
     
     //WRITE TO DIRECTION PINS
     _LATA0 = 1;
     _LATA1 = 0;
     
 }
-void slightRigth(){
-    //TODO: Define this function
+void slightRight(){
+    
+    //SET PERIOD AND DUTY CYCLE
+    //RIGHT
+    OC2RS = 0;
+    OC2R = 0/2;
+    //LEFT
+    OC3RS = FAST;
+    OC3R = FAST/2;
+    
+    //WRITE TO DIRECTION PINS
+    _LATA0 = 1; //RIGHT
+    _LATA1 = 0; //LEFT
+    
 }
 void slightLeft(){
     //TODO: Define this function
@@ -216,11 +236,11 @@ void search(){
 }
 
 int rightQRD(){
-    //TODO: Define this function
+    return _RA3;
 }
 int midQRD(){
-    //TODO: Define this function
+    return _RB4;
 }
 int leftQRD(){
-    //TODO: Define this function
+    return _RA4;
 }
