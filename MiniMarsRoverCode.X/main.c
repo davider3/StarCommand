@@ -17,7 +17,9 @@
 #define WHEELDIAMETER 69.5 //mm
 #define TRACKWIDTH 221 //mm
 #define TURNSPEED 75
-#define STRAIGHTSPEED 75
+#define FAST 75 //TODO:TRIAL AND ERROR TO DECIDE THE BEST VALUE FOR SPEED
+#define SLOW 150
+#define SORTAFAST 120
 
 
 //GLOBAL VARIABLES
@@ -29,11 +31,26 @@ int stepsToTake = 0;
 
 
 //FUNCTION PROTOTYPES
-void tankTurn(int degrees, int dir);
-void driveStraight();
+//SETUP FUNCTIONS
 void setupSteppers();
 void setupQRDs();
 void setupTimer();
+
+//CONTROL FUNCTIONS
+void tankTurn(int degrees, int dir);
+void driveStraight();
+void slightRight();
+void slightLeft();
+void hardRight();
+void hardLeft();
+void search();
+
+//CHECK STATE FUNCTIONS
+int rightQRD(); //RETURNS 1 IF BLACK IS DETECTED
+int midQRD(); //RETURNS 1 IF BLACK IS DETECTED
+int leftQRD(); //RETURNS 1 IF BLACK IS DETECTED
+
+//INTERRUPTS
 void __attribute__((interrupt, no_auto_psv)) _OC1Interrupt(void);
 void __attribute__((interrupt, no_auto_psv)) _OC2Interrupt(void);
 void __attribute__((interrupt, no_auto_psv)) _OC3Interrupt(void);
@@ -45,48 +62,37 @@ int main(void) {
     setupTimer();
     
     //SET UP PARAMETERS FOR STATE MACHINE
-    enum {STRAIGHT1, RIGHT, STRAIGHT2, TURNAROUND} state;
-    state = STRAIGHT1;
+    enum {STRAIGHT, SLIGHTRIGHT, SLIGHTLEFT, HARDRIGHT, HARDLEFT, SEARCH} state;
+    state = STRAIGHT;
     driveStraight();
     
     while(1){
         switch(state){
             
-            case STRAIGHT1:
+            case STRAIGHT:
                 
-                if(TMR1 >= 2*ONESEC){
-                    state = RIGHT;
-                    tankTurn(90,CW);
-                }
                 break;
                 
-            case RIGHT:
+            case SLIGHTRIGHT:
                 
-                if(OC2Steps >= stepsToTake){
-                    state = STRAIGHT2;
-                    TMR1 = 0;
-                    driveStraight();
-                    _OC2IE = 0;
-                }
                 break;
                 
-            case STRAIGHT2:
+            case SLIGHTLEFT:
                 
-                if(TMR1 >= 4*ONESEC){
-                    state = TURNAROUND;
-                    tankTurn(180,CCW);
-                }                
                 break;
                 
-            case TURNAROUND:
+            case HARDRIGHT:
                 
-                if(OC2Steps >= stepsToTake){
-                    state = STRAIGHT1;
-                    TMR1 = 0;
-                    driveStraight();
-                    _OC2IE = 0;
-                }
                 break;
+                
+            case HARDLEFT:
+                
+                break;
+                
+            case SEARCH:
+                
+                break;
+                
         }
     }
     
@@ -108,38 +114,7 @@ void __attribute__((interrupt, no_auto_psv)) _OC3Interrupt(void){
     
     ++OC3Steps;
 }
-void tankTurn(int degrees, int dir){
-    
-    stepsToTake = turnCoeff * degrees;
 
-    //TURN ON INTERRUPT
-    _OC2IE = 1;
-    
-    OC2Steps = 0;
-    
-    //SET PERIOD AND DUTY CYCLE
-    OC2RS = TURNSPEED;
-    OC2R = TURNSPEED/2;
-    OC3RS = TURNSPEED;
-    OC3R = TURNSPEED/2;
-    
-    //WRITE TO DIRECTION PINS
-    _LATA0 = dir;
-    _LATA1 = dir;
-}
-void driveStraight(){
-    
-    //SET PERIOD AND DUTY CYCLE
-    OC2RS = STRAIGHTSPEED;
-    OC2R = STRAIGHTSPEED/2;
-    OC3RS = STRAIGHTSPEED;
-    OC3R = STRAIGHTSPEED/2;
-    
-    //WRITE TO DIRECTION PINS
-    _LATA0 = 1;
-    _LATA1 = 0;
-    
-}
 void setupSteppers(){
     //RIGHT
     OC2CON1 = 0;
@@ -179,5 +154,73 @@ void setupTimer(){
     TMR1 = 0;       // Reset Timer1
 }
 void setupQRDs(){
+    //RIGHT QRD
+    _TRISA3 = 1;
+    _ANSA3 = 0;
     
+    //MID QRD
+    _TRISB4 = 1;
+    _ANSB4 = 0;
+    
+    //LEFT QRD
+    _TRISA4 = 1;
+    
+}
+
+void tankTurn(int degrees, int dir){
+    
+    stepsToTake = turnCoeff * degrees;
+
+    //TURN ON INTERRUPT
+    _OC2IE = 1;
+    
+    OC2Steps = 0;
+    
+    //SET PERIOD AND DUTY CYCLE
+    OC2RS = TURNSPEED;
+    OC2R = TURNSPEED/2;
+    OC3RS = TURNSPEED;
+    OC3R = TURNSPEED/2;
+    
+    //WRITE TO DIRECTION PINS
+    _LATA0 = dir;
+    _LATA1 = dir;
+}
+void driveStraight(){
+    
+    //SET PERIOD AND DUTY CYCLE
+    OC2RS = STRAIGHTSPEED;
+    OC2R = STRAIGHTSPEED/2;
+    OC3RS = STRAIGHTSPEED;
+    OC3R = STRAIGHTSPEED/2;
+    
+    //WRITE TO DIRECTION PINS
+    _LATA0 = 1;
+    _LATA1 = 0;
+    
+}
+void slightRigth(){
+    //TODO: Define this function
+}
+void slightLeft(){
+    //TODO: Define this function
+}
+void hardRight(){
+    //TODO: Define this function
+}
+void hardLeft(){
+    //TODO: Define this function
+}
+void search(){
+    //TODO: Define this function
+}
+
+int rightQRD(){
+    //TODO: Define this function
+}
+int midQRD(){
+    //TODO: Define this function
+}
+int leftQRD(){
+    //TODO: Define this function
 }

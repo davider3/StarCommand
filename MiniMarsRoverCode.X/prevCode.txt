@@ -1,4 +1,49 @@
 A PLACE TO PUT CODE THAT HAS BEEN CUT FROM THE MAIN FILE BUT THAT MIGHT COME IN HANDY LATER
 
 MILESTONE 6 FINITE STATE MACHINE
+
+    //SET UP PARAMETERS FOR STATE MACHINE
+    enum {STRAIGHT1, RIGHT, STRAIGHT2, TURNAROUND} state;
+    state = STRAIGHT1;
+    driveStraight();
     
+    while(1){
+        switch(state){
+            
+            case STRAIGHT1:
+                
+                if(TMR1 >= 2*ONESEC){
+                    state = RIGHT;
+                    tankTurn(90,CW);
+                }
+                break;
+                
+            case RIGHT:
+                
+                if(OC2Steps >= stepsToTake){
+                    state = STRAIGHT2;
+                    TMR1 = 0;
+                    driveStraight();
+                    _OC2IE = 0;
+                }
+                break;
+                
+            case STRAIGHT2:
+                
+                if(TMR1 >= 4*ONESEC){
+                    state = TURNAROUND;
+                    tankTurn(180,CCW);
+                }                
+                break;
+                
+            case TURNAROUND:
+                
+                if(OC2Steps >= stepsToTake){
+                    state = STRAIGHT1;
+                    TMR1 = 0;
+                    driveStraight();
+                    _OC2IE = 0;
+                }
+                break;
+        }
+    }
