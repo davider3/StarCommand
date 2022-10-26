@@ -16,7 +16,6 @@
 #define ONESEC 1938
 #define WHEELDIAMETER 69.5 //mm
 #define TRACKWIDTH 221 //mm
-#define TURNSPEED 50
 #define FAST 50 //TODO:TRIAL AND ERROR TO DECIDE THE BEST VALUE FOR SPEED
 #define SLOW 150
 #define SORTAFAST 120
@@ -190,10 +189,10 @@ void tankTurn(int degrees, int dir){
     OC2Steps = 0;
     
     //SET PERIOD AND DUTY CYCLE
-    OC2RS = TURNSPEED;
-    OC2R = TURNSPEED/2;
-    OC3RS = TURNSPEED;
-    OC3R = TURNSPEED/2;
+    OC2RS = FAST;
+    OC2R = FAST/2;
+    OC3RS = FAST;
+    OC3R = FAST/2;
     
     //WRITE TO DIRECTION PINS
     _LATA0 = dir;
