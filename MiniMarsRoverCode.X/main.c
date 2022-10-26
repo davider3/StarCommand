@@ -16,8 +16,8 @@
 #define ONESEC 1938
 #define WHEELDIAMETER 69.5 //mm
 #define TRACKWIDTH 221 //mm
-#define TURNSPEED 75
-#define FAST 75 //TODO:TRIAL AND ERROR TO DECIDE THE BEST VALUE FOR SPEED
+#define TURNSPEED 50
+#define FAST 50 //TODO:TRIAL AND ERROR TO DECIDE THE BEST VALUE FOR SPEED
 #define SLOW 150
 #define SORTAFAST 120
 
@@ -71,7 +71,7 @@ int main(void) {
             
             case STRAIGHT:
                 
-                if(rightQRD() && midQRD() && !leftQRD()){
+                if(leftQRD()){
                     slightRight();
                     state = SLIGHTRIGHT;
                 }
@@ -79,6 +79,11 @@ int main(void) {
                 break;
                 
             case SLIGHTRIGHT:
+                
+                if(!leftQRD()){
+                    driveStraight();
+                    state = STRAIGHT;
+                }
                 
                 break;
                 
