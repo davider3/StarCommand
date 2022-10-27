@@ -17,8 +17,9 @@
 #define WHEELDIAMETER 69.5 //mm
 #define TRACKWIDTH 221 //mm
 #define FAST 50 //TODO:TRIAL AND ERROR TO DECIDE THE BEST VALUE FOR SPEED
-#define SLOW 150
-#define SORTAFAST 120
+#define SORTAFAST 70
+#define SLOW 90
+#define THRESHOLD 2000
 
 
 //GLOBAL VARIABLES
@@ -69,33 +70,118 @@ int main(void) {
         switch(state){
             
             case STRAIGHT:
-                
-                if(leftQRD()){
-                    slightRight();
-                    state = SLIGHTRIGHT;
+                if(rightQRD()){ //RIGHTQRD IS BLACK
+                    if(midQRD()){
+                        slightRight();
+                        state = SLIGHTRIGHT;
+                    }else{
+                        hardRight();
+                        state = HARDRIGHT;
+                    }
+                }else if(leftQRD()){ //LEFTQRD is BLACK
+                    if(midQRD()){
+                        slightLeft();
+                        state = SLIGHTLEFT;
+                    }else{
+                        hardLeft();
+                        state = HARDLEFT;
+                    }
+                }else if(!midQRD()){ //IF ALL 3 ARE WHITE
+                    search();
+                    state = SEARCH;
                 }
-                
                 break;
                 
             case SLIGHTRIGHT:
-                
-                if(!leftQRD()){
+                if(rightQRD()){ //RIGHTQRD IS BLACK
+                    if(!midQRD()){
+                        hardRight();
+                        state = HARDRIGHT;
+                    }
+                }else if(leftQRD()){ //LEFTQRD is BLACK
+                    if(midQRD()){
+                        slightLeft();
+                        state = SLIGHTLEFT;
+                    }else{
+                        hardLeft();
+                        state = HARDLEFT;
+                    }
+                }else if(midQRD()){ //IF MIDDLE IS BLACK
                     driveStraight();
                     state = STRAIGHT;
+                }else{
+                    search();
+                    state = SEARCH;
                 }
-                
                 break;
                 
             case SLIGHTLEFT:
-                
+                if(rightQRD()){ //RIGHTQRD IS BLACK
+                    if(midQRD()){
+                        slightRight();
+                        state = SLIGHTRIGHT;
+                    }else{
+                        hardRight();
+                        state = HARDRIGHT;
+                    }
+                }else if(leftQRD()){ //LEFTQRD is BLACK
+                    if(!midQRD()){
+                        hardLeft();
+                        state = HARDLEFT;
+                    }
+                }else if(midQRD()){ //IF MIDDLE IS BLACK
+                    driveStraight();
+                    state = STRAIGHT;
+                }else{
+                    search();
+                    state = SEARCH;
+                }
                 break;
                 
             case HARDRIGHT:
-                
+                if(rightQRD()){ //RIGHTQRD IS BLACK
+                    if(midQRD()){
+                        slightRight();
+                        state = SLIGHTRIGHT;
+                    }
+                }else if(leftQRD()){ //LEFTQRD IS BLACK
+                    if(midQRD()){
+                        slightLeft();
+                        state = SLIGHTLEFT;
+                    }else{
+                        hardLeft();
+                        state = HARDLEFT;
+                    }
+                }else if(midQRD()){ //IF MIDDLE IS BLACK
+                    driveStraight();
+                    state = STRAIGHT;
+                }else{
+                    search();
+                    state = SEARCH;
+                }
                 break;
                 
             case HARDLEFT:
-                
+                if(rightQRD()){ //RIGHTQRD IS BLACK
+                    if(midQRD()){
+                        slightRight();
+                        state = SLIGHTRIGHT;
+                    }else{
+                        hardRight();
+                        state = HARDRIGHT;
+                    }
+                }else if(leftQRD()){ //LEFTQRD IS BLACK
+                    if(midQRD()){
+                        slightLeft();
+                        state = SLIGHTLEFT;
+                    }
+                }else if(midQRD()){ //IF MIDDLE IS BLACK
+                    driveStraight();
+                    state = STRAIGHT;
+                }else{
+                    search();
+                    state = SEARCH;
+                }
                 break;
                 
             case SEARCH:
@@ -163,19 +249,41 @@ void setupTimer(){
     TMR1 = 0;       // Reset Timer1
 }
 void setupQRDs(){
-    //RIGHT NOW WE ARE PLANNING ON USING DIGITAL PINS FOR THE QRDS BUT WE 
-    //MIGHT HAVE TO SWITCH TO ANALOG IF THEY CONTINUE TO GIVE ME TROUBLE
+    //SETUP THE ADC 
+     
+    _ADON = 0;    // Disable A/D module during configuration
     
-    //RIGHT QRD
-    _TRISA3 = 1;
-    _ANSA3 = 0;
+    // AD1CON1
+    _MODE12 = 1;  // 12-bit resolution
+    _FORM = 0;    // unsigned integer output
+    _SSRC = 7;    // auto convert
+    _ASAM = 1;    // auto sample
+
+    // AD1CON2
+    _PVCFG = 0;   // use VDD as positive reference
+    _NVCFG = 0;   // use VSS as negative reference
+    _BUFREGEN = 1;// store results in buffer corresponding to channel number
+    _CSCNA = 1;   // scanning mode
+    _SMPI = 0;    // begin new sampling sequence after every sample
+    _ALTS = 0;    // sample MUXA only
+
+    // AD1CON3
+    _ADRC = 0;    // use system clock
+    _SAMC = 1;    // sample every A/D period
+    _ADCS = 0x3F; // TAD = 64*TCY
+
+    //RIGHT
+    _CSS4 = 1;
     
-    //MID QRD
-    _TRISB4 = 1;
-    _ANSB4 = 0;
+    //MID
+    _CSS13 = 1;
     
-    //LEFT QRD
-    _TRISA4 = 1;
+    //LEFT
+    _CSS14 = 1;
+    
+    
+    //TURN ON ADC
+    _ADON = 1;
     
 }
 
@@ -215,8 +323,8 @@ void slightRight(){
     
     //SET PERIOD AND DUTY CYCLE
     //RIGHT
-    OC2RS = 0;
-    OC2R = 0/2;
+    OC2RS = SORTAFAST;
+    OC2R = SORTAFAST/2;
     //LEFT
     OC3RS = FAST;
     OC3R = FAST/2;
@@ -227,24 +335,78 @@ void slightRight(){
     
 }
 void slightLeft(){
-    //TODO: Define this function
+    
+    //SET PERIOD AND DUTY CYCLE
+    //RIGHT
+    OC2RS = FAST;
+    OC2R = FAST/2;
+    //LEFT
+    OC3RS = SORTAFAST;
+    OC3R = SORTAFAST/2;
+    
+    //WRITE TO DIRECTION PINS
+    _LATA0 = 1; //RIGHT
+    _LATA1 = 0; //LEFT
 }
 void hardRight(){
-    //TODO: Define this function
+    
+    //SET PERIOD AND DUTY CYCLE
+    //RIGHT
+    OC2RS = SLOW;
+    OC2R = SLOW/2;
+    //LEFT
+    OC3RS = FAST;
+    OC3R = FAST/2;
+    
+    //WRITE TO DIRECTION PINS
+    _LATA0 = 1; //RIGHT
+    _LATA1 = 0; //LEFT
 }
 void hardLeft(){
-    //TODO: Define this function
+    
+    //SET PERIOD AND DUTY CYCLE
+    //RIGHT
+    OC2RS = FAST;
+    OC2R = FAST/2;
+    //LEFT
+    OC3RS = SLOW;
+    OC3R = SLOW/2;
+    
+    //WRITE TO DIRECTION PINS
+    _LATA0 = 1; //RIGHT
+    _LATA1 = 0; //LEFT
 }
 void search(){
     //TODO: Define this function
 }
 
 int rightQRD(){
-    return _RA3;
+    int onOffr;
+    if(ADC1BUF4 > THRESHOLD){
+        onOffr = 0;
+    }else{
+        onOffr = 1;
+    }
+    
+    return onOffr;
 }
 int midQRD(){
-    return _RB4;
+    int onOffm;
+    if(ADC1BUF13 > THRESHOLD){
+        onOffm = 0;
+    }else{
+        onOffm = 1;
+    }
+    
+    return onOffm;
 }
 int leftQRD(){
-    return _RA4;
+    int onOffl;
+    if(ADC1BUF14 > THRESHOLD){
+        onOffl = 0;
+    }else{
+        onOffl = 1;
+    }
+    
+    return onOffl;
 }
