@@ -16,10 +16,10 @@
 #define ONESEC 1938
 #define WHEELDIAMETER 69.5 //mm
 #define TRACKWIDTH 221 //mm
-#define FAST 50 //TODO:TRIAL AND ERROR TO DECIDE THE BEST VALUE FOR SPEED
+#define FAST 75 //TODO:TRIAL AND ERROR TO DECIDE THE BEST VALUE FOR SPEED
 #define SORTAFAST 70
-#define SLOW 90
-#define THRESHOLD 2000
+#define SLOW 200
+#define THRESHOLD 2500
 
 
 //GLOBAL VARIABLES
@@ -66,7 +66,8 @@ int main(void) {
     state = STRAIGHT;
     driveStraight();
     
-    while(1){
+    while(1){     
+        
         switch(state){
             
             case STRAIGHT:
@@ -86,11 +87,9 @@ int main(void) {
                         hardLeft();
                         state = HARDLEFT;
                     }
-                }else if(!midQRD()){ //IF ALL 3 ARE WHITE
-                    search();
-                    state = SEARCH;
                 }
                 break;
+                
                 
             case SLIGHTRIGHT:
                 if(rightQRD()){ //RIGHTQRD IS BLACK
@@ -109,11 +108,9 @@ int main(void) {
                 }else if(midQRD()){ //IF MIDDLE IS BLACK
                     driveStraight();
                     state = STRAIGHT;
-                }else{
-                    search();
-                    state = SEARCH;
                 }
                 break;
+                
                 
             case SLIGHTLEFT:
                 if(rightQRD()){ //RIGHTQRD IS BLACK
@@ -132,11 +129,9 @@ int main(void) {
                 }else if(midQRD()){ //IF MIDDLE IS BLACK
                     driveStraight();
                     state = STRAIGHT;
-                }else{
-                    search();
-                    state = SEARCH;
                 }
                 break;
+                
                 
             case HARDRIGHT:
                 if(rightQRD()){ //RIGHTQRD IS BLACK
@@ -155,11 +150,9 @@ int main(void) {
                 }else if(midQRD()){ //IF MIDDLE IS BLACK
                     driveStraight();
                     state = STRAIGHT;
-                }else{
-                    search();
-                    state = SEARCH;
                 }
                 break;
+                
                 
             case HARDLEFT:
                 if(rightQRD()){ //RIGHTQRD IS BLACK
@@ -178,14 +171,7 @@ int main(void) {
                 }else if(midQRD()){ //IF MIDDLE IS BLACK
                     driveStraight();
                     state = STRAIGHT;
-                }else{
-                    search();
-                    state = SEARCH;
                 }
-                break;
-                
-            case SEARCH:
-                
                 break;
                 
         }
@@ -264,7 +250,7 @@ void setupQRDs(){
     _NVCFG = 0;   // use VSS as negative reference
     _BUFREGEN = 1;// store results in buffer corresponding to channel number
     _CSCNA = 1;   // scanning mode
-    _SMPI = 0;    // begin new sampling sequence after every sample
+    _SMPI = 2;    // NUMBER OF ANALOG PINS MINUS ONE
     _ALTS = 0;    // sample MUXA only
 
     // AD1CON3
@@ -273,12 +259,18 @@ void setupQRDs(){
     _ADCS = 0x3F; // TAD = 64*TCY
 
     //RIGHT
+    _TRISB2 = 1;
+    _ANSB2 = 1;
     _CSS4 = 1;
     
     //MID
+    _TRISA2 = 1;
+    _ANSA2 = 1;
     _CSS13 = 1;
     
     //LEFT
+    _TRISA3 = 1;
+    _ANSA3 = 1;
     _CSS14 = 1;
     
     
@@ -383,9 +375,9 @@ void search(){
 int rightQRD(){
     int onOffr;
     if(ADC1BUF4 > THRESHOLD){
-        onOffr = 0;
-    }else{
         onOffr = 1;
+    }else{
+        onOffr = 0;
     }
     
     return onOffr;
@@ -393,9 +385,9 @@ int rightQRD(){
 int midQRD(){
     int onOffm;
     if(ADC1BUF13 > THRESHOLD){
-        onOffm = 0;
-    }else{
         onOffm = 1;
+    }else{
+        onOffm = 0;
     }
     
     return onOffm;
@@ -403,9 +395,9 @@ int midQRD(){
 int leftQRD(){
     int onOffl;
     if(ADC1BUF14 > THRESHOLD){
-        onOffl = 0;
-    }else{
         onOffl = 1;
+    }else{
+        onOffl = 0;
     }
     
     return onOffl;
