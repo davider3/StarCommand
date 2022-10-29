@@ -197,7 +197,7 @@ void __attribute__((interrupt, no_auto_psv)) _OC3Interrupt(void){
 }
 
 void setupSteppers(){
-    //RIGHT
+    //RIGHT, uses OC2, pin 4, RB0
     OC2CON1 = 0;
     OC2CON2 = 0;
     OC2CON1bits.OCTSEL = 0b111;
@@ -205,11 +205,11 @@ void setupSteppers(){
     OC2CON2bits.OCTRIG = 0;
     OC2CON1bits.OCM = 0b110;
     
-    _OC2IP = 4; // Select OCx interrupt priority
-    _OC2IE = 1; // Enable OCx interrupt
-    _OC2IF = 0; // Clear OCx interrupt flag
+    _OC2IP = 4; // Select OC2 interrupt priority
+    _OC2IE = 1; // Enable OC2 interrupt
+    _OC2IF = 0; // Clear OC2 interrupt flag
     
-    //LEFT
+    //LEFT, uses OC3, pin 5, RB1
     OC3CON1 = 0;
     OC3CON2 = 0;
     OC3CON1bits.OCTSEL = 0b111;
@@ -217,15 +217,15 @@ void setupSteppers(){
     OC3CON2bits.OCTRIG = 0;
     OC3CON1bits.OCM = 0b110;
     
-    _OC3IP = 4; // Select OCx interrupt priority
-    _OC3IE = 1; // Enable OCx interrupt
-    _OC3IF = 0; // Clear OCx interrupt flag
+    _OC3IP = 4; // Select OC3 interrupt priority
+    _OC3IE = 1; // Enable OC3 interrupt
+    _OC3IF = 0; // Clear OC3 interrupt flag
     
     //SET UP DIRECTION PINS
     _TRISA0 = 0;
-    _ANSA0 = 0;
-    _ANSA1 = 0;
-    _TRISA1 = 0;
+    _ANSA0 = 0; //this is unnecessary
+    _ANSA1 = 0; //this is unnecessary
+    _TRISA1 = 0;  
     
 }
 void setupTimer(){
@@ -271,7 +271,6 @@ void setupQRDs(){
     //LEFT
     _TRISA3 = 1;
     _ANSA3 = 1;
-    _CSS14 = 1;
     
     
     //TURN ON ADC
