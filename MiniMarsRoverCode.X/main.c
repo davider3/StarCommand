@@ -20,7 +20,7 @@
 #define SORTAFAST 70
 #define SLOW 200
 #define THRESHOLD 2500
-
+#define taskDet _RRA2
 
 //GLOBAL VARIABLES
 int OC1Steps = 0;
@@ -28,6 +28,8 @@ int OC2Steps = 0;
 int OC3Steps = 0;
 float turnCoeff = TRACKWIDTH / (1.8 * WHEELDIAMETER); //1.7666
 int stepsToTake = 0;
+int taskstepCount = 0;
+int lineCount = 0;
 
 
 //FUNCTION PROTOTYPES
@@ -61,31 +63,36 @@ int main(void) {
     setupQRDs();
     setupTimer();
     
-    //SET UP PARAMETERS FOR STATE MACHINE
-    enum {STRAIGHT, SLIGHTRIGHT, SLIGHTLEFT, HARDRIGHT, HARDLEFT, SEARCH} state;
-    state = STRAIGHT;
+    //SET UP PARAMETERS FOR LINE FOLLOWING STATE MACHINE
+    enum {STRAIGHT, SLIGHTRIGHT, SLIGHTLEFT, HARDRIGHT, HARDLEFT, SEARCH} linefollowingstate;
+    linefollowingstate = STRAIGHT;
     driveStraight();
     
+    //SET UP PARAMETERS FOR TASK DETECTION STATE MACHINE
+    enum {TASKDETECTIONDEFAULT, TASKDETECTIONBLACK, TASKDETECTIONWHITE} taskdetectionstate;
+    taskdetectionstate = TASKDETECTIONDEFAULT;
+   
     while(1){     
         
-        switch(state){
+        //LINE FOLLOWING FSM
+        switch(linefollowingstate){
             
             case STRAIGHT:
                 if(rightQRD()){ //RIGHTQRD IS BLACK
                     if(midQRD()){
                         slightRight();
-                        state = SLIGHTRIGHT;
+                        linefollowingstate = SLIGHTRIGHT;
                     }else{
                         hardRight();
-                        state = HARDRIGHT;
+                        linefollowingstate = HARDRIGHT;
                     }
                 }else if(leftQRD()){ //LEFTQRD is BLACK
                     if(midQRD()){
                         slightLeft();
-                        state = SLIGHTLEFT;
+                        linefollowingstate = SLIGHTLEFT;
                     }else{
                         hardLeft();
-                        state = HARDLEFT;
+                        linefollowingstate = HARDLEFT;
                     }
                 }
                 break;
@@ -95,19 +102,19 @@ int main(void) {
                 if(rightQRD()){ //RIGHTQRD IS BLACK
                     if(!midQRD()){
                         hardRight();
-                        state = HARDRIGHT;
+                        linefollowingstate = HARDRIGHT;
                     }
                 }else if(leftQRD()){ //LEFTQRD is BLACK
                     if(midQRD()){
                         slightLeft();
-                        state = SLIGHTLEFT;
+                        linefollowingstate = SLIGHTLEFT;
                     }else{
                         hardLeft();
-                        state = HARDLEFT;
+                        linefollowingstate = HARDLEFT;
                     }
                 }else if(midQRD()){ //IF MIDDLE IS BLACK
                     driveStraight();
-                    state = STRAIGHT;
+                    linefollowingstate = STRAIGHT;
                 }
                 break;
                 
@@ -116,19 +123,19 @@ int main(void) {
                 if(rightQRD()){ //RIGHTQRD IS BLACK
                     if(midQRD()){
                         slightRight();
-                        state = SLIGHTRIGHT;
+                        linefollowingstate = SLIGHTRIGHT;
                     }else{
                         hardRight();
-                        state = HARDRIGHT;
+                        linefollowingstate = HARDRIGHT;
                     }
                 }else if(leftQRD()){ //LEFTQRD is BLACK
                     if(!midQRD()){
                         hardLeft();
-                        state = HARDLEFT;
+                        linefollowingstate = HARDLEFT;
                     }
                 }else if(midQRD()){ //IF MIDDLE IS BLACK
                     driveStraight();
-                    state = STRAIGHT;
+                    linefollowingstate = STRAIGHT;
                 }
                 break;
                 
@@ -137,19 +144,19 @@ int main(void) {
                 if(rightQRD()){ //RIGHTQRD IS BLACK
                     if(midQRD()){
                         slightRight();
-                        state = SLIGHTRIGHT;
+                        linefollowingstate = SLIGHTRIGHT;
                     }
                 }else if(leftQRD()){ //LEFTQRD IS BLACK
                     if(midQRD()){
                         slightLeft();
-                        state = SLIGHTLEFT;
+                        linefollowingstate = SLIGHTLEFT;
                     }else{
                         hardLeft();
-                        state = HARDLEFT;
+                        linefollowingstate = HARDLEFT;
                     }
                 }else if(midQRD()){ //IF MIDDLE IS BLACK
                     driveStraight();
-                    state = STRAIGHT;
+                    linefollowingstate = STRAIGHT;
                 }
                 break;
                 
@@ -158,23 +165,57 @@ int main(void) {
                 if(rightQRD()){ //RIGHTQRD IS BLACK
                     if(midQRD()){
                         slightRight();
-                        state = SLIGHTRIGHT;
+                        linefollowingstate = SLIGHTRIGHT;
                     }else{
                         hardRight();
-                        state = HARDRIGHT;
+                        linefollowingstate = HARDRIGHT;
                     }
                 }else if(leftQRD()){ //LEFTQRD IS BLACK
                     if(midQRD()){
                         slightLeft();
-                        state = SLIGHTLEFT;
+                        linefollowingstate = SLIGHTLEFT;
                     }
                 }else if(midQRD()){ //IF MIDDLE IS BLACK
                     driveStraight();
-                    state = STRAIGHT;
+                    linefollowingstate = STRAIGHT;
                 }
                 break;
                 
+                
         }
+        //TASK DETECTION FSM     
+        switch(taskdetectionstate){
+        
+            case TASKDETECTIONDEFAULT:
+                if(taskDet == Black){
+                    taskdetectionstate = TASKDETECTIONBLACK;
+                    taskstepCount = 0;
+                    lineCount = 0;
+                }
+            break;
+            
+            case TASKDETECTIONBLACK:
+                if(taskstepCount >= THRESHOLD){
+                    taskdetectionstate = TASKDETECTIONDEFAULT;
+                }
+                else if(taskDet == White){
+                    lineCount++;
+                    taskdetectionstate = TASKDETECTIONWHITE;
+                }
+            break;
+            
+            case TASKDETECTIONWHITE:
+                if(taskstepCount >= THRESHOLD){
+                    taskdetectionstate = TASKDETECTIONDEFAULT;
+                }
+                else if(lineCount == 3){
+                    OC2R = 0;
+                    OC3R = 0;
+                }
+                else if(taskDet == Black){
+                    taskdetectionstate = TASKDETECTIONBLACK;
+                }
+            break;
     }
     
     return 0;
