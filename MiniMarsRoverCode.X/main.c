@@ -325,6 +325,10 @@ void taskDetectionFSM(){
                 }
                 else if(!taskdetectionQRD()){ //IF TASK DETECTION IS WHITE
                     lineCount++;
+<<<<<<< HEAD
+=======
+                    taskstepCount = 0;
+>>>>>>> e983243119131c5d81c0e3f88c8d15a560cdd10b
                     taskDetectionState = TASKDETECTIONWHITE;
                 }
             break;
@@ -478,4 +482,8 @@ int taskdetectionQRD(){
     }
     
     return onOffr;
+<<<<<<< HEAD
 }
+=======
+}
+>>>>>>> e983243119131c5d81c0e3f88c8d15a560cdd10b
