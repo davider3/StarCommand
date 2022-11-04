@@ -20,9 +20,7 @@
 #define SORTAFAST 70
 #define SLOW 200
 #define THRESHOLD 2500
-#define taskDet _RRA2
-#define BLACK 1
-#define WHITE 0
+#define LIMIT 300
 
 //GLOBAL VARIABLES
 int OC1Steps = 0;
@@ -30,7 +28,6 @@ int OC2Steps = 0;
 int OC3Steps = 0;
 float turnCoeff = TRACKWIDTH / (1.8 * WHEELDIAMETER); //1.7666
 int stepsToTake = 0;
-int taskstepCount = 0;
 int lineCount = 0;
 
 //FSM VARIABLES
@@ -314,28 +311,28 @@ void taskDetectionFSM(){
             case TASKDETECTIONDEFAULT:
                 if(taskdetectionQRD()){ //IF TASK DETECTION IS BLACK
                     taskDetectionState = TASKDETECTIONBLACK;
-                    taskstepCount = 0;
+                    OC2Steps = 0;
+                    _OC2IE = 1;
                     lineCount = 0;
                 }
             break;
             
             case TASKDETECTIONBLACK:
-                if(taskstepCount >= THRESHOLD){
+                if(OC2Steps >= LIMIT){
                     taskDetectionState = TASKDETECTIONDEFAULT;
+                    _OC2IE = 0;
                 }
                 else if(!taskdetectionQRD()){ //IF TASK DETECTION IS WHITE
                     lineCount++;
-<<<<<<< HEAD
-=======
-                    taskstepCount = 0;
->>>>>>> e983243119131c5d81c0e3f88c8d15a560cdd10b
+                    OC2Steps = 0;
                     taskDetectionState = TASKDETECTIONWHITE;
                 }
             break;
             
             case TASKDETECTIONWHITE:
-                if(taskstepCount >= THRESHOLD){
+                if(OC2Steps >= LIMIT){
                     taskDetectionState = TASKDETECTIONDEFAULT;
+                    _OC2IE = 0;
                 }
                 else if(lineCount == 3){
                     OC2R = 0;
@@ -343,6 +340,7 @@ void taskDetectionFSM(){
                 }
                 else if(taskdetectionQRD()){ //IF TASK DETECTION IS BLACK
                     taskDetectionState = TASKDETECTIONBLACK;
+                    _OC2IE = 0;
                 }
             break;
         }
@@ -482,8 +480,4 @@ int taskdetectionQRD(){
     }
     
     return onOffr;
-<<<<<<< HEAD
 }
-=======
-}
->>>>>>> e983243119131c5d81c0e3f88c8d15a560cdd10b
