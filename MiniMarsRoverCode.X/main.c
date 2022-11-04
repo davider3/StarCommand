@@ -21,6 +21,8 @@
 #define SLOW 200
 #define THRESHOLD 2500
 #define taskDet _RRA2
+#define BLACK 1
+#define WHITE 0
 
 //GLOBAL VARIABLES
 int OC1Steps = 0;
@@ -31,12 +33,20 @@ int stepsToTake = 0;
 int taskstepCount = 0;
 int lineCount = 0;
 
+//FSM VARIABLES
+enum {STRAIGHT, SLIGHTRIGHT, SLIGHTLEFT, HARDRIGHT, HARDLEFT, SEARCH} lineFollowingState;
+enum {TASKDETECTIONDEFAULT, TASKDETECTIONBLACK, TASKDETECTIONWHITE} taskDetectionState;
+
 
 //FUNCTION PROTOTYPES
 //SETUP FUNCTIONS
 void setupSteppers();
 void setupQRDs();
 void setupTimer();
+
+//FINITE STATE MACHINES
+void lineFollowingFSM();
+void taskDetectionFSM();
 
 //CONTROL FUNCTIONS
 void tankTurn(int degrees, int dir);
@@ -64,163 +74,23 @@ int main(void) {
     setupTimer();
     
     //SET UP PARAMETERS FOR LINE FOLLOWING STATE MACHINE
-    enum {STRAIGHT, SLIGHTRIGHT, SLIGHTLEFT, HARDRIGHT, HARDLEFT, SEARCH} linefollowingstate;
-    linefollowingstate = STRAIGHT;
+    lineFollowingState = STRAIGHT;
     driveStraight();
     
     //SET UP PARAMETERS FOR TASK DETECTION STATE MACHINE
-    enum {TASKDETECTIONDEFAULT, TASKDETECTIONBLACK, TASKDETECTIONWHITE} taskdetectionstate;
-    taskdetectionstate = TASKDETECTIONDEFAULT;
+    taskDetectionState = TASKDETECTIONDEFAULT;
    
     while(1){     
         
-        //LINE FOLLOWING FSM
-        switch(linefollowingstate){
-            
-            case STRAIGHT:
-                if(rightQRD()){ //RIGHTQRD IS BLACK
-                    if(midQRD()){
-                        slightRight();
-                        linefollowingstate = SLIGHTRIGHT;
-                    }else{
-                        hardRight();
-                        linefollowingstate = HARDRIGHT;
-                    }
-                }else if(leftQRD()){ //LEFTQRD is BLACK
-                    if(midQRD()){
-                        slightLeft();
-                        linefollowingstate = SLIGHTLEFT;
-                    }else{
-                        hardLeft();
-                        linefollowingstate = HARDLEFT;
-                    }
-                }
-                break;
-                
-                
-            case SLIGHTRIGHT:
-                if(rightQRD()){ //RIGHTQRD IS BLACK
-                    if(!midQRD()){
-                        hardRight();
-                        linefollowingstate = HARDRIGHT;
-                    }
-                }else if(leftQRD()){ //LEFTQRD is BLACK
-                    if(midQRD()){
-                        slightLeft();
-                        linefollowingstate = SLIGHTLEFT;
-                    }else{
-                        hardLeft();
-                        linefollowingstate = HARDLEFT;
-                    }
-                }else if(midQRD()){ //IF MIDDLE IS BLACK
-                    driveStraight();
-                    linefollowingstate = STRAIGHT;
-                }
-                break;
-                
-                
-            case SLIGHTLEFT:
-                if(rightQRD()){ //RIGHTQRD IS BLACK
-                    if(midQRD()){
-                        slightRight();
-                        linefollowingstate = SLIGHTRIGHT;
-                    }else{
-                        hardRight();
-                        linefollowingstate = HARDRIGHT;
-                    }
-                }else if(leftQRD()){ //LEFTQRD is BLACK
-                    if(!midQRD()){
-                        hardLeft();
-                        linefollowingstate = HARDLEFT;
-                    }
-                }else if(midQRD()){ //IF MIDDLE IS BLACK
-                    driveStraight();
-                    linefollowingstate = STRAIGHT;
-                }
-                break;
-                
-                
-            case HARDRIGHT:
-                if(rightQRD()){ //RIGHTQRD IS BLACK
-                    if(midQRD()){
-                        slightRight();
-                        linefollowingstate = SLIGHTRIGHT;
-                    }
-                }else if(leftQRD()){ //LEFTQRD IS BLACK
-                    if(midQRD()){
-                        slightLeft();
-                        linefollowingstate = SLIGHTLEFT;
-                    }else{
-                        hardLeft();
-                        linefollowingstate = HARDLEFT;
-                    }
-                }else if(midQRD()){ //IF MIDDLE IS BLACK
-                    driveStraight();
-                    linefollowingstate = STRAIGHT;
-                }
-                break;
-                
-                
-            case HARDLEFT:
-                if(rightQRD()){ //RIGHTQRD IS BLACK
-                    if(midQRD()){
-                        slightRight();
-                        linefollowingstate = SLIGHTRIGHT;
-                    }else{
-                        hardRight();
-                        linefollowingstate = HARDRIGHT;
-                    }
-                }else if(leftQRD()){ //LEFTQRD IS BLACK
-                    if(midQRD()){
-                        slightLeft();
-                        linefollowingstate = SLIGHTLEFT;
-                    }
-                }else if(midQRD()){ //IF MIDDLE IS BLACK
-                    driveStraight();
-                    linefollowingstate = STRAIGHT;
-                }
-                break;
-                
-                
-        }
-        //TASK DETECTION FSM     
-        switch(taskdetectionstate){
+        lineFollowingFSM();
+        taskDetectionFSM();
         
-            case TASKDETECTIONDEFAULT:
-                if(taskDet == Black){
-                    taskdetectionstate = TASKDETECTIONBLACK;
-                    taskstepCount = 0;
-                    lineCount = 0;
-                }
-            break;
-            
-            case TASKDETECTIONBLACK:
-                if(taskstepCount >= THRESHOLD){
-                    taskdetectionstate = TASKDETECTIONDEFAULT;
-                }
-                else if(taskDet == White){
-                    lineCount++;
-                    taskdetectionstate = TASKDETECTIONWHITE;
-                }
-            break;
-            
-            case TASKDETECTIONWHITE:
-                if(taskstepCount >= THRESHOLD){
-                    taskdetectionstate = TASKDETECTIONDEFAULT;
-                }
-                else if(lineCount == 3){
-                    OC2R = 0;
-                    OC3R = 0;
-                }
-                else if(taskDet == Black){
-                    taskdetectionstate = TASKDETECTIONBLACK;
-                }
-            break;
     }
     
     return 0;
 }
 
+//INTERRUPTS
 void __attribute__((interrupt, no_auto_psv)) _OC1Interrupt(void){
     _OC1IF = 0;
     
@@ -237,6 +107,8 @@ void __attribute__((interrupt, no_auto_psv)) _OC3Interrupt(void){
     ++OC3Steps;
 }
 
+
+//SETUP FUNCTION DEFINITIONS
 void setupSteppers(){
     //RIGHT, uses OC2, pin 4, RB0
     OC2CON1 = 0;
@@ -319,6 +191,155 @@ void setupQRDs(){
     
 }
 
+//FSM FUNCTION DEFINITIONS
+void lineFollowingFSM(){
+    //LINE FOLLOWING FSM
+        switch(lineFollowingState){
+            
+            case STRAIGHT:
+                if(rightQRD()){ //RIGHTQRD IS BLACK
+                    if(midQRD()){
+                        slightRight();
+                        lineFollowingState = SLIGHTRIGHT;
+                    }else{
+                        hardRight();
+                        lineFollowingState = HARDRIGHT;
+                    }
+                }else if(leftQRD()){ //LEFTQRD is BLACK
+                    if(midQRD()){
+                        slightLeft();
+                        lineFollowingState = SLIGHTLEFT;
+                    }else{
+                        hardLeft();
+                        lineFollowingState = HARDLEFT;
+                    }
+                }
+                break;
+                
+                
+            case SLIGHTRIGHT:
+                if(rightQRD()){ //RIGHTQRD IS BLACK
+                    if(!midQRD()){
+                        hardRight();
+                        lineFollowingState = HARDRIGHT;
+                    }
+                }else if(leftQRD()){ //LEFTQRD is BLACK
+                    if(midQRD()){
+                        slightLeft();
+                        lineFollowingState = SLIGHTLEFT;
+                    }else{
+                        hardLeft();
+                        lineFollowingState = HARDLEFT;
+                    }
+                }else if(midQRD()){ //IF MIDDLE IS BLACK
+                    driveStraight();
+                    lineFollowingState = STRAIGHT;
+                }
+                break;
+                
+                
+            case SLIGHTLEFT:
+                if(rightQRD()){ //RIGHTQRD IS BLACK
+                    if(midQRD()){
+                        slightRight();
+                        lineFollowingState = SLIGHTRIGHT;
+                    }else{
+                        hardRight();
+                        lineFollowingState = HARDRIGHT;
+                    }
+                }else if(leftQRD()){ //LEFTQRD is BLACK
+                    if(!midQRD()){
+                        hardLeft();
+                        lineFollowingState = HARDLEFT;
+                    }
+                }else if(midQRD()){ //IF MIDDLE IS BLACK
+                    driveStraight();
+                    lineFollowingState = STRAIGHT;
+                }
+                break;
+                
+                
+            case HARDRIGHT:
+                if(rightQRD()){ //RIGHTQRD IS BLACK
+                    if(midQRD()){
+                        slightRight();
+                        lineFollowingState = SLIGHTRIGHT;
+                    }
+                }else if(leftQRD()){ //LEFTQRD IS BLACK
+                    if(midQRD()){
+                        slightLeft();
+                        lineFollowingState = SLIGHTLEFT;
+                    }else{
+                        hardLeft();
+                        lineFollowingState = HARDLEFT;
+                    }
+                }else if(midQRD()){ //IF MIDDLE IS BLACK
+                    driveStraight();
+                    lineFollowingState = STRAIGHT;
+                }
+                break;
+                
+                
+            case HARDLEFT:
+                if(rightQRD()){ //RIGHTQRD IS BLACK
+                    if(midQRD()){
+                        slightRight();
+                        lineFollowingState = SLIGHTRIGHT;
+                    }else{
+                        hardRight();
+                        lineFollowingState = HARDRIGHT;
+                    }
+                }else if(leftQRD()){ //LEFTQRD IS BLACK
+                    if(midQRD()){
+                        slightLeft();
+                        lineFollowingState = SLIGHTLEFT;
+                    }
+                }else if(midQRD()){ //IF MIDDLE IS BLACK
+                    driveStraight();
+                    lineFollowingState = STRAIGHT;
+                }
+                break;
+                
+                
+        }
+}
+void taskDetectionFSM(){
+    switch(taskDetectionState){
+        
+            case TASKDETECTIONDEFAULT:
+                if(taskDet == BLACK){
+                    taskDetectionState = TASKDETECTIONBLACK;
+                    taskstepCount = 0;
+                    lineCount = 0;
+                }
+            break;
+            
+            case TASKDETECTIONBLACK:
+                if(taskstepCount >= THRESHOLD){
+                    taskDetectionState = TASKDETECTIONDEFAULT;
+                }
+                else if(taskDet == WHITE){
+                    lineCount++;
+                    taskDetectionState = TASKDETECTIONWHITE;
+                }
+            break;
+            
+            case TASKDETECTIONWHITE:
+                if(taskstepCount >= THRESHOLD){
+                    taskDetectionState = TASKDETECTIONDEFAULT;
+                }
+                else if(lineCount == 3){
+                    OC2R = 0;
+                    OC3R = 0;
+                }
+                else if(taskDet == BLACK){
+                    taskDetectionState = TASKDETECTIONBLACK;
+                }
+            break;
+        }
+}
+
+//CONTROL FUNCTION DEFINITIONS
 void tankTurn(int degrees, int dir){
     
     stepsToTake = turnCoeff * degrees;
@@ -412,6 +433,7 @@ void search(){
     //TODO: Define this function
 }
 
+//CHECK STATE FUNCTION DEFINITIONS
 int rightQRD(){
     int onOffr;
     if(ADC1BUF4 > THRESHOLD){
