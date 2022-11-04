@@ -325,6 +325,7 @@ void taskDetectionFSM(){
                 }
                 else if(!taskdetectionQRD()){ //IF TASK DETECTION IS WHITE
                     lineCount++;
+                    taskstepCount = 0;
                     taskDetectionState = TASKDETECTIONWHITE;
                 }
             break;
