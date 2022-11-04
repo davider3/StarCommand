@@ -61,7 +61,7 @@ void search();
 int rightQRD(); //RETURNS 1 IF BLACK IS DETECTED
 int midQRD(); //RETURNS 1 IF BLACK IS DETECTED
 int leftQRD(); //RETURNS 1 IF BLACK IS DETECTED
-
+int taskdetectionQRD(); //RETURNS 1 IF BLACK IS DETECTED
 //INTERRUPTS
 void __attribute__((interrupt, no_auto_psv)) _OC1Interrupt(void);
 void __attribute__((interrupt, no_auto_psv)) _OC2Interrupt(void);
@@ -184,7 +184,12 @@ void setupQRDs(){
     //LEFT
     _TRISA3 = 1;
     _ANSA3 = 1;
+    _CSS14 = 1;
     
+    //TASKDETECTION
+    _TRISB4 = 1;
+    _ANSB4 = 1;
+    _CSS15 = 1;
     
     //TURN ON ADC
     _ADON = 1;
@@ -307,7 +312,7 @@ void taskDetectionFSM(){
     switch(taskDetectionState){
         
             case TASKDETECTIONDEFAULT:
-                if(taskDet == BLACK){
+                if(taskdetectionQRD()){ //IF TASK DETECTION IS BLACK
                     taskDetectionState = TASKDETECTIONBLACK;
                     taskstepCount = 0;
                     lineCount = 0;
@@ -318,7 +323,7 @@ void taskDetectionFSM(){
                 if(taskstepCount >= THRESHOLD){
                     taskDetectionState = TASKDETECTIONDEFAULT;
                 }
-                else if(taskDet == WHITE){
+                else if(!taskdetectionQRD()){ //IF TASK DETECTION IS WHITE
                     lineCount++;
                     taskDetectionState = TASKDETECTIONWHITE;
                 }
@@ -332,7 +337,7 @@ void taskDetectionFSM(){
                     OC2R = 0;
                     OC3R = 0;
                 }
-                else if(taskDet == BLACK){
+                else if(taskdetectionQRD()){ //IF TASK DETECTION IS BLACK
                     taskDetectionState = TASKDETECTIONBLACK;
                 }
             break;
@@ -463,4 +468,14 @@ int leftQRD(){
     }
     
     return onOffl;
+}
+int taskdetectionQRD(){
+    int onOffr;
+    if(ADC1BUF15 > THRESHOLD){
+        onOffr = 1;
+    }else{
+        onOffr = 0;
+    }
+    
+    return onOffr;
 }
