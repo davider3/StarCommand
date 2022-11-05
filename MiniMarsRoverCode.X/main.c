@@ -21,6 +21,7 @@
 #define SLOW 260
 #define THRESHOLD 2500
 #define LIMIT 300
+#define FRONTSENSOR !_RB8
 
 //GLOBAL VARIABLES
 int OC1Steps = 0;
@@ -33,18 +34,19 @@ int lineCount = 0;
 //FSM VARIABLES
 enum {STRAIGHT, SLIGHTRIGHT, SLIGHTLEFT, HARDRIGHT, HARDLEFT, SEARCH} lineFollowingState;
 enum {TASKDETECTIONDEFAULT, TASKDETECTIONBLACK, TASKDETECTIONWHITE} taskDetectionState;
-
+enum {STRAIGHT, WALLDETECTED} canyonState;
 
 //FUNCTION PROTOTYPES
+
 //SETUP FUNCTIONS
 void setupSteppers();
 void setupQRDs();
 void setupTimer();
-
+void setupDistanceSensors();
 //FINITE STATE MACHINES
 void lineFollowingFSM();
 void taskDetectionFSM();
-
+void canyonNavigationFSM();
 //CONTROL FUNCTIONS
 void tankTurn(int degrees, int dir);
 void driveStraight();
@@ -53,7 +55,6 @@ void slightLeft();
 void hardRight();
 void hardLeft();
 void search();
-
 //CHECK STATE FUNCTIONS
 int rightQRD(); //RETURNS 1 IF BLACK IS DETECTED
 int midQRD(); //RETURNS 1 IF BLACK IS DETECTED
@@ -63,6 +64,8 @@ int taskdetectionQRD(); //RETURNS 1 IF BLACK IS DETECTED
 void __attribute__((interrupt, no_auto_psv)) _OC1Interrupt(void);
 void __attribute__((interrupt, no_auto_psv)) _OC2Interrupt(void);
 void __attribute__((interrupt, no_auto_psv)) _OC3Interrupt(void);
+
+
 
 int main(void) {
     
@@ -77,6 +80,9 @@ int main(void) {
     //SET UP PARAMETERS FOR TASK DETECTION STATE MACHINE
     taskDetectionState = TASKDETECTIONDEFAULT;
     
+    //SET UP PARAMETERS FOR CANYON NAVIGATION STATE MACHINE
+    canyonState = STRAIGHT;
+    
     //SET UP LED FOR DEBUGGING
     _TRISB7 = 0;
     
@@ -86,11 +92,14 @@ int main(void) {
         
         lineFollowingFSM();
         taskDetectionFSM();
+        canyonNavigationFSM();
         
     }
     
     return 0;
 }
+
+
 
 //INTERRUPTS
 void __attribute__((interrupt, no_auto_psv)) _OC1Interrupt(void){
@@ -108,8 +117,6 @@ void __attribute__((interrupt, no_auto_psv)) _OC3Interrupt(void){
     
     ++OC3Steps;
 }
-
-
 //SETUP FUNCTION DEFINITIONS
 void setupSteppers(){
     //RIGHT, uses OC2, pin 4, RB0
@@ -197,7 +204,10 @@ void setupQRDs(){
     _ADON = 1;
     
 }
-
+void setupDistanceSensors(){
+    //FRONT SENSOR
+    _TRISB8 = 1;
+}
 //FSM FUNCTION DEFINITIONS
 void lineFollowingFSM(){
     //LINE FOLLOWING FSM
@@ -350,7 +360,24 @@ void taskDetectionFSM(){
             break;
         }
 }
-
+void canyonNavigationFSM(){
+    switch(canyonState){
+        case STRAIGHT:
+            if(FRONTSENSOR){
+                canyonState = WALLDETECTED;
+                OC2Steps = 0;
+                tankTurn(90, CW);
+            }
+            break;
+            
+        case WALLDETECTED:
+            if(OC2Steps >= stepsToTake){
+                canyonState = STRAIGHT;
+                driveStraight();
+            }
+            break;
+    }
+}
 //CONTROL FUNCTION DEFINITIONS
 void tankTurn(int degrees, int dir){
     
@@ -444,7 +471,6 @@ void hardLeft(){
 void search(){
     //TODO: Define this function
 }
-
 //CHECK STATE FUNCTION DEFINITIONS
 int rightQRD(){
     int onOffr;
