@@ -17,8 +17,8 @@
 #define WHEELDIAMETER 69.5 //mm
 #define TRACKWIDTH 221 //mm
 #define FAST 75 //TODO:TRIAL AND ERROR TO DECIDE THE BEST VALUE FOR SPEED
-#define SORTAFAST 70
-#define SLOW 200
+#define SORTAFAST 150
+#define SLOW 260
 #define THRESHOLD 2500
 #define LIMIT 300
 
@@ -76,6 +76,11 @@ int main(void) {
     
     //SET UP PARAMETERS FOR TASK DETECTION STATE MACHINE
     taskDetectionState = TASKDETECTIONDEFAULT;
+    
+    //SET UP LED FOR DEBUGGING
+    _TRISB7 = 0;
+    
+    
    
     while(1){     
         
@@ -160,7 +165,7 @@ void setupQRDs(){
     _NVCFG = 0;   // use VSS as negative reference
     _BUFREGEN = 1;// store results in buffer corresponding to channel number
     _CSCNA = 1;   // scanning mode
-    _SMPI = 2;    // NUMBER OF ANALOG PINS MINUS ONE
+    _SMPI = 3;    // NUMBER OF ANALOG PINS MINUS ONE
     _ALTS = 0;    // sample MUXA only
 
     // AD1CON3
@@ -184,9 +189,9 @@ void setupQRDs(){
     _CSS14 = 1;
     
     //TASKDETECTION
-    _TRISB4 = 1;
-    _ANSB4 = 1;
-    _CSS15 = 1;
+    _TRISB12 = 1;
+    _ANSB12 = 1;
+    _CSS12 = 1;
     
     //TURN ON ADC
     _ADON = 1;
@@ -472,12 +477,12 @@ int leftQRD(){
     return onOffl;
 }
 int taskdetectionQRD(){
-    int onOffr;
-    if(ADC1BUF15 > THRESHOLD){
-        onOffr = 1;
+    int onOfft;
+    if(ADC1BUF12 > THRESHOLD){
+        onOfft = 1;
     }else{
-        onOffr = 0;
+        onOfft = 0;
     }
     
-    return onOffr;
+    return onOfft;
 }
