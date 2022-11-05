@@ -17,7 +17,7 @@
 #define WHEELDIAMETER 69.5 //mm
 #define TRACKWIDTH 221 //mm
 #define FAST 75 //TODO:TRIAL AND ERROR TO DECIDE THE BEST VALUE FOR SPEED
-#define SORTAFAST 150
+#define SORTAFAST 100
 #define SLOW 260
 #define THRESHOLD 2500
 #define LIMIT 300
@@ -32,9 +32,9 @@ int stepsToTake = 0;
 int lineCount = 0;
 
 //FSM VARIABLES
-enum {STRAIGHT, SLIGHTRIGHT, SLIGHTLEFT, HARDRIGHT, HARDLEFT, SEARCH} lineFollowingState;
+enum {STRAIGHT, SLIGHTRIGHT, SLIGHTLEFT, HARDRIGHT, HARDLEFT} lineFollowingState;
 enum {TASKDETECTIONDEFAULT, TASKDETECTIONBLACK, TASKDETECTIONWHITE} taskDetectionState;
-enum {STRAIGHT, WALLDETECTED} canyonState;
+enum {GOSTRAIGHT, WALLDETECTED} canyonState;
 
 //FUNCTION PROTOTYPES
 
@@ -72,6 +72,7 @@ int main(void) {
     setupSteppers();
     setupQRDs();
     setupTimer();
+    setupDistanceSensors();
     
     //SET UP PARAMETERS FOR LINE FOLLOWING STATE MACHINE
     lineFollowingState = STRAIGHT;
@@ -81,7 +82,7 @@ int main(void) {
     taskDetectionState = TASKDETECTIONDEFAULT;
     
     //SET UP PARAMETERS FOR CANYON NAVIGATION STATE MACHINE
-    canyonState = STRAIGHT;
+    canyonState = GOSTRAIGHT;
     
     //SET UP LED FOR DEBUGGING
     _TRISB7 = 0;
@@ -90,8 +91,8 @@ int main(void) {
    
     while(1){     
         
-        lineFollowingFSM();
-        taskDetectionFSM();
+        //lineFollowingFSM();
+        //taskDetectionFSM();
         canyonNavigationFSM();
         
     }
@@ -362,7 +363,7 @@ void taskDetectionFSM(){
 }
 void canyonNavigationFSM(){
     switch(canyonState){
-        case STRAIGHT:
+        case GOSTRAIGHT:
             if(FRONTSENSOR){
                 canyonState = WALLDETECTED;
                 OC2Steps = 0;
@@ -372,7 +373,7 @@ void canyonNavigationFSM(){
             
         case WALLDETECTED:
             if(OC2Steps >= stepsToTake){
-                canyonState = STRAIGHT;
+                canyonState = GOSTRAIGHT;
                 driveStraight();
             }
             break;
