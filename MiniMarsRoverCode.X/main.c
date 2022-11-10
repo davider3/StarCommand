@@ -67,6 +67,7 @@ int rightQRD(); //RETURNS 1 IF BLACK IS DETECTED
 int midQRD(); //RETURNS 1 IF BLACK IS DETECTED
 int leftQRD(); //RETURNS 1 IF BLACK IS DETECTED
 int taskdetectionQRD(); //RETURNS 1 IF BLACK IS DETECTED
+int ballQRD();
 //INTERRUPTS
 void __attribute__((interrupt, no_auto_psv)) _OC1Interrupt(void);
 void __attribute__((interrupt, no_auto_psv)) _OC2Interrupt(void);
@@ -179,7 +180,7 @@ void setupQRDs(){
     _NVCFG = 0;   // use VSS as negative reference
     _BUFREGEN = 1;// store results in buffer corresponding to channel number
     _CSCNA = 1;   // scanning mode
-    _SMPI = 3;    // NUMBER OF ANALOG PINS MINUS ONE
+    _SMPI = 4;    // NUMBER OF ANALOG PINS MINUS ONE
     _ALTS = 0;    // sample MUXA only
 
     // AD1CON3
@@ -206,6 +207,11 @@ void setupQRDs(){
     _TRISB12 = 1;
     _ANSB12 = 1;
     _CSS12 = 1;
+    
+    //BALLDETECTION
+    _TRISB13 = 1;
+    _ANSB13 = 1;
+    _CSS11 = 1;
     
     //TURN ON ADC
     _ADON = 1;
@@ -544,4 +550,14 @@ int taskdetectionQRD(){
     }
     
     return onOfft;
+}
+int ballQRD(){
+   int onOffb;
+    if(ADC1BUF11 > THRESHOLD){
+        onOffb = 1;
+    }else{
+        onOffb = 0;
+    }
+    
+    return onOffb; 
 }
