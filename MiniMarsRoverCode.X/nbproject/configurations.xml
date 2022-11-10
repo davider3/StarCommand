@@ -14,6 +14,7 @@
                    projectFiles="true">
       <itemPath>main.c</itemPath>
       <itemPath>prevCode.txt</itemPath>
+      <itemPath>setup.h</itemPath>
     </logicalFolder>
     <logicalFolder name="ExternalFiles"
                    displayName="Important Files"
