@@ -22,6 +22,9 @@
 #define THRESHOLD 2500
 #define LIMIT 300
 #define FRONTSENSOR !_RB8
+#define OPENSERVO 31
+#define CLOSESERVO 15
+#define SERVOPERIOD 387
 
 //GLOBAL VARIABLES
 int OC1Steps = 0;
@@ -43,6 +46,7 @@ void setupSteppers();
 void setupQRDs();
 void setupTimer();
 void setupDistanceSensors();
+void setupServo();
 //FINITE STATE MACHINES
 void lineFollowingFSM();
 void taskDetectionFSM();
@@ -55,6 +59,9 @@ void slightLeft();
 void hardRight();
 void hardLeft();
 void search();
+void debugLED(int onOff);
+void openGate();
+void closeGate();
 //CHECK STATE FUNCTIONS
 int rightQRD(); //RETURNS 1 IF BLACK IS DETECTED
 int midQRD(); //RETURNS 1 IF BLACK IS DETECTED
@@ -93,7 +100,7 @@ int main(void) {
         
         //lineFollowingFSM();
         //taskDetectionFSM();
-        canyonNavigationFSM();
+        //canyonNavigationFSM();
         
     }
     
@@ -141,8 +148,7 @@ void setupSteppers(){
     OC3CON1bits.OCM = 0b110;
     
     _OC3IP = 4; // Select OC3 interrupt priority
-    _OC3IE = 1; // Enable OC3 interrupt
-    _OC3IF = 0; // Clear OC3 interrupt flag
+    _OC3IE = 0; // Disable OC3 interrupt
     
     //SET UP DIRECTION PINS
     _TRISA0 = 0;
@@ -208,6 +214,21 @@ void setupQRDs(){
 void setupDistanceSensors(){
     //FRONT SENSOR
     _TRISB8 = 1;
+}
+void setupServo(){
+    
+    OC1CON1 = 0;
+    OC1CON2 = 0;
+    OC1CON1bits.OCTSEL = 0b111;
+    OC1CON2bits.SYNCSEL = 0x1F;
+    OC1CON2bits.OCTRIG = 0;
+    OC1CON1bits.OCM = 0b110;
+    
+    _OC1IP = 4; // Select OC1 interrupt priority
+    _OC1IE = 0; // Disable OC1 interrupt
+    
+    OC1RS = 0;
+    OC1R = 0;
 }
 //FSM FUNCTION DEFINITIONS
 void lineFollowingFSM(){
@@ -471,6 +492,17 @@ void hardLeft(){
 }
 void search(){
     //TODO: Define this function
+}
+void debugLED(int onOff){
+    _LATB7 = onOff;
+}
+void openGate(){
+    OC1RS = SERVOPERIOD;
+    OC1R = OPENSERVO;
+}
+void closeGate(){
+    OC1RS = SERVOPERIOD;
+    OC1R = CLOSESERVO;
 }
 //CHECK STATE FUNCTION DEFINITIONS
 int rightQRD(){
