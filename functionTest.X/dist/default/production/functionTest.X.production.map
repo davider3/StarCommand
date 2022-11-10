@@ -65,9 +65,9 @@ Default Scalar Model: Small
 section                    address   length (PC units)   length (bytes) (dec)
 -------                    -------   -----------------   --------------------
 .text                        0x200                0xce           0x135  (309)
-.text                        0x2ce                0x48            0x6c  (108)
+.text                        0x2ce                0x4c            0x72  (114)
 
-                 Total "program" memory used (bytes):          0x1a1  (417) 2%
+                 Total "program" memory used (bytes):          0x1a7  (423) 2%
 
 
 "data" Memory  [Origin = 0x800, Length = 0x800]
@@ -100,7 +100,7 @@ External Symbols in Program Memory (by address):
                   0x0002ce                  _turnOnLED
                   0x0002d6                  _turnOffLED
                   0x0002de                  _main
-                  0x000300                  _setupTimer
+                  0x000304                  _setupTimer
 
 External Symbols in Program Memory (by name):
 
@@ -110,7 +110,7 @@ External Symbols in Program Memory (by name):
                   0x00023c                  __psv_init
                   0x000200                  __resetPRI
                   0x0002de                  _main
-                  0x000300                  _setupTimer
+                  0x000304                  _setupTimer
                   0x0002d6                  _turnOffLED
                   0x0002ce                  _turnOnLED
 
@@ -215,18 +215,18 @@ __FDS
 .comment
  *(.comment)
 
-.debug_info       0x000000        0x5c3
+.debug_info       0x000000        0x5d0
  *(.debug_info)
- .debug_info      0x000000        0x5c3 build/default/production/mainFT.o
+ .debug_info      0x000000        0x5d0 build/default/production/mainFT.o
  *(.gnu.linkonce.wi.*)
 
 .debug_abbrev     0x000000         0xda
  *(.debug_abbrev)
  .debug_abbrev    0x000000         0xda build/default/production/mainFT.o
 
-.debug_line       0x000000        0x127
+.debug_line       0x000000        0x129
  *(.debug_line)
- .debug_line      0x000000        0x127 build/default/production/mainFT.o
+ .debug_line      0x000000        0x129 build/default/production/mainFT.o
 
 .debug_frame      0x000000         0x7c
  *(.debug_frame)
@@ -889,9 +889,9 @@ __c30_signature
 .config_IESO      0xf80006          0x2
  .config_IESO     0xf80006          0x2 build/default/production/mainFT.o
 
-.text             0x0002ce         0x48
- .text            0x0002ce         0x48 build/default/production/mainFT.o
+.text             0x0002ce         0x4c
+ .text            0x0002ce         0x4c build/default/production/mainFT.o
                   0x0002ce                  _turnOnLED
                   0x0002d6                  _turnOffLED
                   0x0002de                  _main
-                  0x000300                  _setupTimer
+                  0x000304                  _setupTimer

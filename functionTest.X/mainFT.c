@@ -11,21 +11,25 @@
 #pragma config FNOSC = LPRC
 
 
-#define ONESEC 1938
+#define ONESEC 500
 
 void setupTimer();
 
 
 int main(void) {
     
+    setupTimer();
+    
     _TRISB7 = 0;
     
+    turnOnLED();
+    
     while(1){
-        if(TMR1 > ONESEC){
-            turnOffLED();
-        }else if(TMR1 > 2*ONESEC){
+        if(TMR1 > 2*ONESEC){
             turnOnLED();
             TMR1 = 0;
+        }else if(TMR1 > ONESEC){
+            turnOffLED();
         }
     }
     
