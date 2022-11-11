@@ -53,12 +53,15 @@ void slightLeft();
 void hardRight();
 void hardLeft();
 void search();
+void sampleReturn();
 
 //CHECK STATE FUNCTIONS
 int rightQRD(); //RETURNS 1 IF BLACK IS DETECTED
 int midQRD(); //RETURNS 1 IF BLACK IS DETECTED
 int leftQRD(); //RETURNS 1 IF BLACK IS DETECTED
 int taskdetectionQRD(); //RETURNS 1 IF BLACK IS DETECTED
+int samplereturnQRD(); //RETURNS 1 IF BLACK IS DETECTED
+
 //INTERRUPTS
 void __attribute__((interrupt, no_auto_psv)) _OC1Interrupt(void);
 void __attribute__((interrupt, no_auto_psv)) _OC2Interrupt(void);
@@ -108,7 +111,6 @@ void __attribute__((interrupt, no_auto_psv)) _OC3Interrupt(void){
     
     ++OC3Steps;
 }
-
 
 //SETUP FUNCTION DEFINITIONS
 void setupSteppers(){
@@ -165,7 +167,7 @@ void setupQRDs(){
     _NVCFG = 0;   // use VSS as negative reference
     _BUFREGEN = 1;// store results in buffer corresponding to channel number
     _CSCNA = 1;   // scanning mode
-    _SMPI = 3;    // NUMBER OF ANALOG PINS MINUS ONE
+    _SMPI = 4;    // NUMBER OF ANALOG PINS MINUS ONE
     _ALTS = 0;    // sample MUXA only
 
     // AD1CON3
@@ -192,6 +194,11 @@ void setupQRDs(){
     _TRISB12 = 1;
     _ANSB12 = 1;
     _CSS12 = 1;
+    
+    //SAMPLEDETECTION
+    _TRISB2 = 1;
+    _ANSB2 = 1;
+    _CSS4 = 0;
     
     //TURN ON ADC
     _ADON = 1;
@@ -444,6 +451,16 @@ void hardLeft(){
 void search(){
     //TODO: Define this function
 }
+void sampleReturn(){
+    if(sampledetectionQRD()){
+        tankTurn(90, CW);
+        //TODO: Add code to open gate, close it, and then return to driving straight
+    }
+    else if(!sampledetectionQRD()){
+        tankTurn(90,CCW);
+        //TODO: Add code to open gate, close it, and then return to driving straight
+    }
+}
 
 //CHECK STATE FUNCTION DEFINITIONS
 int rightQRD(){
@@ -485,4 +502,14 @@ int taskdetectionQRD(){
     }
     
     return onOfft;
+}
+int sampledetectionQRD(){
+    int onOffs;
+    if(ADC1BUF4 > THRESHOLD){
+        onOffs = 1;
+    }else{
+        onOffs = 0;
+    }
+    
+    return onOffs;
 }
