@@ -3,8 +3,8 @@
     <type>com.microchip.mplab.nbide.embedded.makeproject</type>
     <configuration>
         <data xmlns="http://www.netbeans.org/ns/make-project/1">
-            <name>MiniMarsRoverCode</name>
-            <creation-uuid>2c056ea0-59d8-4262-842d-73924fedbd79</creation-uuid>
+            <name>functionTest</name>
+            <creation-uuid>9caeacd4-c3fe-4359-935f-ee2c89a71396</creation-uuid>
             <make-project-type>0</make-project-type>
             <c-extensions>c</c-extensions>
             <cpp-extensions/>
