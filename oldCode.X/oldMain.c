@@ -8,46 +8,52 @@
 
 #include "xc.h"
 #include "setup.h"
+#include "control.h"
 #include "checkState.h"
-#include "controlFunctions.h"
 #pragma config FNOSC = LPRC //31 kHz oscillator
 
 #define CW 0
 #define CCW 1
+#define REST 0
 #define ONEREV 200
 #define ONESEC 1938
-#define TANKTURNSPEED 100
-#define FRONTSENSOR !_RB8
+#define WHEELDIAMETER 69.5 //mm
+#define TRACKWIDTH 221 //mm
+#define FAST 75 //TODO:TRIAL AND ERROR TO DECIDE THE BEST VALUE FOR SPEED
+#define SORTAFAST 100
+#define SLOW 260
 #define LIMIT 300
+#define FRONTSENSOR !_RB8
 
 //GLOBAL VARIABLES
 int OC1Steps = 0;
 int OC2Steps = 0;
 int OC3Steps = 0;
-float turnCoeff = 1.7666; //TRACKWIDTH/(1.8 * WHEELDIAMETER)
+float turnCoeff = TRACKWIDTH / (1.8 * WHEELDIAMETER); //1.7666
 int stepsToTake = 0;
 int lineCount = 0;
-int prevState = 0;
 
 //FSM VARIABLES
-enum {STRAIGHT, SLIGHTRIGHT, SLIGHTLEFT, HARDRIGHT, HARDLEFT, SEARCH} lineFollowingState;
+enum {STRAIGHT, SLIGHTRIGHT, SLIGHTLEFT, HARDRIGHT, HARDLEFT} lineFollowingState;
 enum {TASKDETECTIONDEFAULT, TASKDETECTIONBLACK, TASKDETECTIONWHITE} taskDetectionState;
 enum {GOSTRAIGHT, WALLDETECTED} canyonState;
 enum {WAIT, WHITEBALL, BLACKBALL} sampleState;
 
 //FUNCTION PROTOTYPES
+
 //FINITE STATE MACHINES
 void lineFollowingFSM();
 void taskDetectionFSM();
 void canyonNavigationFSM();
 void sampleReturnFSM();
+
 //CONTROL FUNCTIONS
 void tankTurn(int degrees, int dir);
+
 //INTERRUPTS
 void __attribute__((interrupt, no_auto_psv)) _OC1Interrupt(void);
 void __attribute__((interrupt, no_auto_psv)) _OC2Interrupt(void);
 void __attribute__((interrupt, no_auto_psv)) _OC3Interrupt(void);
-
 
 
 int main(void) {
@@ -57,43 +63,37 @@ int main(void) {
     setupTimer();
     setupDistanceSensors();
     setupServo();
-<<<<<<< HEAD
-=======
-    setupDebugLED();
->>>>>>> 1dd021ab83e898b3f5d6f976d0651545cd48d3f0
     
-    //SET UP PARAMETERS FOR STATE MACHINES
+    //SET UP PARAMETERS FOR LINE FOLLOWING STATE MACHINE
     lineFollowingState = STRAIGHT;
-    //driveStraight();
-    taskDetectionState = TASKDETECTIONDEFAULT;
-    canyonState = GOSTRAIGHT;
-    sampleState = WAIT;
-   // closeGate();
-
+    driveStraight();
     
-<<<<<<< HEAD
+    //SET UP PARAMETERS FOR TASK DETECTION STATE MACHINE
+    taskDetectionState = TASKDETECTIONDEFAULT;
+    
+    //SET UP PARAMETERS FOR CANYON NAVIGATION STATE MACHINE
+    canyonState = GOSTRAIGHT;
+    
+    //SET UP PARAMETERS FOR SAMPLE RETURN STATE MACHINE
+    sampleState = WAIT;
+    closeGate();
+    
     //SET UP LED FOR DEBUGGING
     _TRISB7 = 0;
     
-    
+
    
     while(1){     
         
-        openGate();
-        //lineFollowingFSM();
-        //taskDetectionFSM();
-        //canyonNavigationFSM();
+//        lineFollowingFSM();
+//        taskDetectionFSM();
+//        canyonNavigationFSM();
         
-=======
-    while(1){    
-        lineFollowingFSM();
-        taskDetectionFSM();
->>>>>>> 1dd021ab83e898b3f5d6f976d0651545cd48d3f0
+        
     }
     
     return 0;
 }
-
 
 
 //INTERRUPTS
@@ -140,7 +140,6 @@ void lineFollowingFSM(){
                 
                 
             case SLIGHTRIGHT:
-                prevState = 1;
                 if(rightQRD()){ //RIGHTQRD IS BLACK
                     if(!midQRD()){
                         hardRight();
@@ -157,16 +156,11 @@ void lineFollowingFSM(){
                 }else if(midQRD()){ //IF MIDDLE IS BLACK
                     driveStraight();
                     lineFollowingState = STRAIGHT;
-                }
-                else{
-                    lineFollowingState = SEARCH;
-                    search(prevState);
                 }
                 break;
                 
                 
             case SLIGHTLEFT:
-                prevState = 0;
                 if(rightQRD()){ //RIGHTQRD IS BLACK
                     if(midQRD()){
                         slightRight();
@@ -184,15 +178,10 @@ void lineFollowingFSM(){
                     driveStraight();
                     lineFollowingState = STRAIGHT;
                 }
-                else{
-                    lineFollowingState = SEARCH;
-                    search(prevState);
-                }
                 break;
                 
                 
             case HARDRIGHT:
-                prevState = 1;
                 if(rightQRD()){ //RIGHTQRD IS BLACK
                     if(midQRD()){
                         slightRight();
@@ -209,16 +198,11 @@ void lineFollowingFSM(){
                 }else if(midQRD()){ //IF MIDDLE IS BLACK
                     driveStraight();
                     lineFollowingState = STRAIGHT;
-                }
-                else{
-                    lineFollowingState = SEARCH;
-                    search(prevState);
                 }
                 break;
                 
                 
             case HARDLEFT:
-                prevState = 0;
                 if(rightQRD()){ //RIGHTQRD IS BLACK
                     if(midQRD()){
                         slightRight();
@@ -236,35 +220,6 @@ void lineFollowingFSM(){
                     driveStraight();
                     lineFollowingState = STRAIGHT;
                 }
-                else{
-                    lineFollowingState = SEARCH;
-                    search(prevState);
-                }
-                break;
-                
-            case SEARCH:
-                if(rightQRD()){ //RIGHTQRD IS BLACK
-                    if(midQRD()){
-                        slightRight();
-                        lineFollowingState = SLIGHTRIGHT;
-                    }else{
-                        hardRight();
-                        lineFollowingState = HARDRIGHT;
-                    }
-                }else if(leftQRD()){ //LEFTQRD IS BLACK
-                    if(midQRD()){
-                        slightLeft();
-                        lineFollowingState = SLIGHTLEFT;
-                    }else{
-                        hardLeft();
-                        lineFollowingState = HARDLEFT;
-                    }
-                }else if(midQRD()){ //IF MIDDLE IS BLACK
-                    driveStraight();
-                    lineFollowingState = STRAIGHT;
-                }
-            
-            
                 break;
                 
                 
@@ -387,13 +342,12 @@ void tankTurn(int degrees, int dir){
     OC2Steps = 0;
     
     //SET PERIOD AND DUTY CYCLE
-    OC2RS = TANKTURNSPEED;
-    OC2R = TANKTURNSPEED/2;
-    OC3RS = TANKTURNSPEED;
-    OC3R = TANKTURNSPEED/2;
+    OC2RS = SORTAFAST;
+    OC2R = SORTAFAST/2;
+    OC3RS = SORTAFAST;
+    OC3R = SORTAFAST/2;
     
     //WRITE TO DIRECTION PINS
     _LATA0 = dir;
     _LATA1 = dir;
 }
-

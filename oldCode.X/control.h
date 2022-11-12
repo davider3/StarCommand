@@ -2,7 +2,7 @@
 #define	CONTROL_H
 
 #include <xc.h> 
-#define FAST 75
+#define FAST 75 //TODO:TRIAL AND ERROR TO DECIDE THE BEST VALUE FOR SPEED
 #define SORTAFAST 100
 #define SLOW 260
 #define OPENSERVO 30
@@ -114,5 +114,5 @@ void closeGate(){
     OC1R = CLOSESERVO;
 }
 
-#endif	/* CONTROL_H */
+#endif	/* XC_HEADER_TEMPLATE_H */
 

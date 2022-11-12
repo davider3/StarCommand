@@ -1,10 +1,10 @@
-#ifndef CONTROL_H
-#define	CONTROL_H
+#ifndef CONTROL_FUNCTIONS_H
+#define	CONTROL_FUNCTIONS_H
 
 #include <xc.h> 
-#define FAST 75
-#define SORTAFAST 100
-#define SLOW 260
+#define FAST 90
+#define SORTAFAST 120
+#define SLOW 220
 #define OPENSERVO 30
 #define CLOSESERVO 10
 #define SERVOPERIOD 387
@@ -96,8 +96,12 @@ void stop(){
     
 }
 
-void search(){
-    //TODO: Define this function
+void search(int prev){
+    if(prev){
+        hardRight();
+    }else{
+        hardLeft();
+    }
 }
 
 void debugLED(int onOff){
@@ -114,5 +118,5 @@ void closeGate(){
     OC1R = CLOSESERVO;
 }
 
-#endif	/* CONTROL_H */
+#endif	/* CONTROL_FUNCTIONS_H */
 
