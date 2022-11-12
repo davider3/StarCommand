@@ -8,6 +8,8 @@
 
 #include "xc.h"
 #include "setup.h"
+#include "checkState.h"
+#include "control.h"
 #pragma config FNOSC = LPRC //31 kHz oscillator
 
 #define CW 0
@@ -17,15 +19,11 @@
 #define ONESEC 1938
 #define WHEELDIAMETER 69.5 //mm
 #define TRACKWIDTH 221 //mm
-#define FAST 75 //TODO:TRIAL AND ERROR TO DECIDE THE BEST VALUE FOR SPEED
+#define FAST 75
 #define SORTAFAST 100
 #define SLOW 260
-#define THRESHOLD 2500
-#define LIMIT 300
 #define FRONTSENSOR !_RB8
-#define OPENSERVO 30
-#define CLOSESERVO 10
-#define SERVOPERIOD 387
+#define LIMIT 300
 
 //GLOBAL VARIABLES
 int OC1Steps = 0;
@@ -50,22 +48,6 @@ void canyonNavigationFSM();
 void sampleReturnFSM();
 //CONTROL FUNCTIONS
 void tankTurn(int degrees, int dir);
-void driveStraight();
-void slightRight();
-void slightLeft();
-void hardRight();
-void hardLeft();
-void stop();
-void search();
-void debugLED(int onOff);
-void openGate();
-void closeGate();
-//CHECK STATE FUNCTIONS
-int rightQRD(); //RETURNS 1 IF BLACK IS DETECTED
-int midQRD(); //RETURNS 1 IF BLACK IS DETECTED
-int leftQRD(); //RETURNS 1 IF BLACK IS DETECTED
-int taskdetectionQRD(); //RETURNS 1 IF BLACK IS DETECTED
-int ballQRD();
 //INTERRUPTS
 void __attribute__((interrupt, no_auto_psv)) _OC1Interrupt(void);
 void __attribute__((interrupt, no_auto_psv)) _OC2Interrupt(void);
@@ -348,6 +330,7 @@ void sampleReturnFSM(){
             break;
     }
 }
+
 //CONTROL FUNCTION DEFINITIONS
 void tankTurn(int degrees, int dir){
     
@@ -368,149 +351,4 @@ void tankTurn(int degrees, int dir){
     _LATA0 = dir;
     _LATA1 = dir;
 }
-void driveStraight(){
-    
-    //SET PERIOD AND DUTY CYCLE
-    OC2RS = FAST;
-    OC2R = FAST/2;
-    OC3RS = FAST;
-    OC3R = FAST/2;
-    
-    //WRITE TO DIRECTION PINS
-    _LATA0 = 1;
-    _LATA1 = 0;
-    
-}
-void slightRight(){
-    
-    //SET PERIOD AND DUTY CYCLE
-    //RIGHT
-    OC2RS = SORTAFAST;
-    OC2R = SORTAFAST/2;
-    //LEFT
-    OC3RS = FAST;
-    OC3R = FAST/2;
-    
-    //WRITE TO DIRECTION PINS
-    _LATA0 = 1; //RIGHT
-    _LATA1 = 0; //LEFT
-    
-}
-void slightLeft(){
-    
-    //SET PERIOD AND DUTY CYCLE
-    //RIGHT
-    OC2RS = FAST;
-    OC2R = FAST/2;
-    //LEFT
-    OC3RS = SORTAFAST;
-    OC3R = SORTAFAST/2;
-    
-    //WRITE TO DIRECTION PINS
-    _LATA0 = 1; //RIGHT
-    _LATA1 = 0; //LEFT
-}
-void hardRight(){
-    
-    //SET PERIOD AND DUTY CYCLE
-    //RIGHT
-    OC2RS = SLOW;
-    OC2R = SLOW/2;
-    //LEFT
-    OC3RS = FAST;
-    OC3R = FAST/2;
-    
-    //WRITE TO DIRECTION PINS
-    _LATA0 = 1; //RIGHT
-    _LATA1 = 0; //LEFT
-}
-void hardLeft(){
-    
-    //SET PERIOD AND DUTY CYCLE
-    //RIGHT
-    OC2RS = FAST;
-    OC2R = FAST/2;
-    //LEFT
-    OC3RS = SLOW;
-    OC3R = SLOW/2;
-    
-    //WRITE TO DIRECTION PINS
-    _LATA0 = 1; //RIGHT
-    _LATA1 = 0; //LEFT
-}
-void stop(){
-    
-     //SET PERIOD AND DUTY CYCLE
-    //RIGHT
-    OC2RS = 0;
-    OC2R = 0;
-    //LEFT
-    OC3RS = 0;
-    OC3R = 0;
-    
-}
-void search(){
-    //TODO: Define this function
-}
-void debugLED(int onOff){
-    _LATB7 = onOff;
-}
-void openGate(){
-    OC1RS = SERVOPERIOD;
-    OC1R = OPENSERVO;
-}
-void closeGate(){
-    OC1RS = SERVOPERIOD;
-    OC1R = CLOSESERVO;
-}
-//CHECK STATE FUNCTION DEFINITIONS
-int rightQRD(){
-    int onOffr;
-    if(ADC1BUF4 > THRESHOLD){
-        onOffr = 1;
-    }else{
-        onOffr = 0;
-    }
-    
-    return onOffr;
-}
-int midQRD(){
-    int onOffm;
-    if(ADC1BUF13 > THRESHOLD){
-        onOffm = 1;
-    }else{
-        onOffm = 0;
-    }
-    
-    return onOffm;
-}
-int leftQRD(){
-    int onOffl;
-    if(ADC1BUF14 > THRESHOLD){
-        onOffl = 1;
-    }else{
-        onOffl = 0;
-    }
-    
-    return onOffl;
-}
-int taskdetectionQRD(){
-    int onOfft;
-    if(ADC1BUF12 > THRESHOLD){
-        onOfft = 1;
-    }else{
-        onOfft = 0;
-    }
-    
-    return onOfft;
-}
-int ballQRD(){
-   int onOffb;
-    if(ADC1BUF11 > THRESHOLD){
-        onOffb = 1;
-    }else{
-        onOffb = 0;
-    }
-    
-    return onOffb; 
-}
+

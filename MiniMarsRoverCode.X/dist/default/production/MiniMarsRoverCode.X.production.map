@@ -168,27 +168,27 @@ External Symbols in Program Memory (by address):
                   0x0006c0                  _setupQRDs
                   0x00072a                  _setupDistanceSensors
                   0x000732                  _setupServo
-                  0x000766                  _main
-                  0x000784                  _lineFollowingFSM
-                  0x0008f2                  _taskDetectionFSM
-                  0x00096e                  _canyonNavigationFSM
-                  0x0009ac                  _sampleReturnFSM
-                  0x000a58                  _tankTurn
-                  0x000aba                  _driveStraight
-                  0x000ad4                  _slightRight
-                  0x000aee                  _slightLeft
-                  0x000b08                  _hardRight
-                  0x000b22                  _hardLeft
-                  0x000b3c                  _stop
-                  0x000b4a                  _search
-                  0x000b50                  _debugLED
-                  0x000b6c                  _openGate
-                  0x000b7a                  _closeGate
-                  0x000b88                  _rightQRD
-                  0x000ba2                  _midQRD
-                  0x000bbc                  _leftQRD
-                  0x000bd6                  _taskdetectionQRD
-                  0x000bf0                  _ballQRD
+                  0x000766                  _rightQRD
+                  0x000780                  _midQRD
+                  0x00079a                  _leftQRD
+                  0x0007b4                  _taskdetectionQRD
+                  0x0007ce                  _ballQRD
+                  0x0007e8                  _driveStraight
+                  0x000802                  _slightRight
+                  0x00081c                  _slightLeft
+                  0x000836                  _hardRight
+                  0x000850                  _hardLeft
+                  0x00086a                  _stop
+                  0x000878                  _search
+                  0x00087e                  _debugLED
+                  0x00089a                  _openGate
+                  0x0008a8                  _closeGate
+                  0x0008b6                  _main
+                  0x0008d4                  _lineFollowingFSM
+                  0x000a42                  _taskDetectionFSM
+                  0x000abe                  _canyonNavigationFSM
+                  0x000afc                  _sampleReturnFSM
+                  0x000ba8                  _tankTurn
 
 External Symbols in Program Memory (by name):
 
@@ -212,32 +212,32 @@ External Symbols in Program Memory (by name):
                   0x000200                  __resetPRI
                   0x000534                  __typef
                   0x0004d6                  __unpackdnrmf
-                  0x000bf0                  _ballQRD
-                  0x00096e                  _canyonNavigationFSM
-                  0x000b7a                  _closeGate
-                  0x000b50                  _debugLED
-                  0x000aba                  _driveStraight
-                  0x000b22                  _hardLeft
-                  0x000b08                  _hardRight
-                  0x000bbc                  _leftQRD
-                  0x000784                  _lineFollowingFSM
-                  0x000766                  _main
-                  0x000ba2                  _midQRD
-                  0x000b6c                  _openGate
-                  0x000b88                  _rightQRD
-                  0x0009ac                  _sampleReturnFSM
-                  0x000b4a                  _search
+                  0x0007ce                  _ballQRD
+                  0x000abe                  _canyonNavigationFSM
+                  0x0008a8                  _closeGate
+                  0x00087e                  _debugLED
+                  0x0007e8                  _driveStraight
+                  0x000850                  _hardLeft
+                  0x000836                  _hardRight
+                  0x00079a                  _leftQRD
+                  0x0008d4                  _lineFollowingFSM
+                  0x0008b6                  _main
+                  0x000780                  _midQRD
+                  0x00089a                  _openGate
+                  0x000766                  _rightQRD
+                  0x000afc                  _sampleReturnFSM
+                  0x000878                  _search
                   0x00072a                  _setupDistanceSensors
                   0x0006c0                  _setupQRDs
                   0x000732                  _setupServo
                   0x000644                  _setupSteppers
                   0x0006aa                  _setupTimer
-                  0x000aee                  _slightLeft
-                  0x000ad4                  _slightRight
-                  0x000b3c                  _stop
-                  0x000a58                  _tankTurn
-                  0x0008f2                  _taskDetectionFSM
-                  0x000bd6                  _taskdetectionQRD
+                  0x00081c                  _slightLeft
+                  0x000802                  _slightRight
+                  0x00086a                  _stop
+                  0x000ba8                  _tankTurn
+                  0x000a42                  _taskDetectionFSM
+                  0x0007b4                  _taskdetectionQRD
 
 Memory Configuration
 
@@ -370,51 +370,51 @@ __FDS
 .comment
  *(.comment)
 
-.debug_info       0x000000       0x33ee
+.debug_info       0x000000       0x33d9
  *(.debug_info)
- .debug_info      0x000000       0x2d80 build/default/production/main.o
- .debug_info      0x002d80         0x8d c:/program files/microchip/xc16/v2.00/bin/bin/../../lib\libc99-pic30-elf.a(fixsfsi.XX_o)
- .debug_info      0x002e0d         0x8f c:/program files/microchip/xc16/v2.00/bin/bin/../../lib\libc99-pic30-elf.a(floatsisf.XX_o)
- .debug_info      0x002e9c         0x8d c:/program files/microchip/xc16/v2.00/bin/bin/../../lib\libc99-pic30-elf.a(funpack.XX_o)
- .debug_info      0x002f29         0x9d c:/program files/microchip/xc16/v2.00/bin/bin/../../lib\libc99-pic30-elf.a(mulsf3x.XX_o)
- .debug_info      0x002fc6         0xa0 c:/program files/microchip/xc16/v2.00/bin/bin/../../lib\libc99-pic30-elf.a(dnrmpackfx.XX_o)
- .debug_info      0x003066         0xa2 c:/program files/microchip/xc16/v2.00/bin/bin/../../lib\libc99-pic30-elf.a(unpackdnrmfx.XX_o)
- .debug_info      0x003108         0x9c c:/program files/microchip/xc16/v2.00/bin/bin/../../lib\libc99-pic30-elf.a(typefx.XX_o)
- .debug_info      0x0031a4         0x9f c:/program files/microchip/xc16/v2.00/bin/bin/../../lib\libc99-pic30-elf.a(propnanfx.XX_o)
- .debug_info      0x003243         0x8f c:/program files/microchip/xc16/v2.00/bin/bin/../../lib\libc99-pic30-elf.a(floatdisf.XX_o)
- .debug_info      0x0032d2         0x91 c:/program files/microchip/xc16/v2.00/bin/bin/../../lib\libc99-pic30-elf.a(floatundisf.XX_o)
- .debug_info      0x003363         0x8b c:/program files/microchip/xc16/v2.00/bin/bin/../../lib\libc99-pic30-elf.a(fpack.XX_o)
+ .debug_info      0x000000       0x2d6b build/default/production/main.o
+ .debug_info      0x002d6b         0x8d c:/program files/microchip/xc16/v2.00/bin/bin/../../lib\libc99-pic30-elf.a(fixsfsi.XX_o)
+ .debug_info      0x002df8         0x8f c:/program files/microchip/xc16/v2.00/bin/bin/../../lib\libc99-pic30-elf.a(floatsisf.XX_o)
+ .debug_info      0x002e87         0x8d c:/program files/microchip/xc16/v2.00/bin/bin/../../lib\libc99-pic30-elf.a(funpack.XX_o)
+ .debug_info      0x002f14         0x9d c:/program files/microchip/xc16/v2.00/bin/bin/../../lib\libc99-pic30-elf.a(mulsf3x.XX_o)
+ .debug_info      0x002fb1         0xa0 c:/program files/microchip/xc16/v2.00/bin/bin/../../lib\libc99-pic30-elf.a(dnrmpackfx.XX_o)
+ .debug_info      0x003051         0xa2 c:/program files/microchip/xc16/v2.00/bin/bin/../../lib\libc99-pic30-elf.a(unpackdnrmfx.XX_o)
+ .debug_info      0x0030f3         0x9c c:/program files/microchip/xc16/v2.00/bin/bin/../../lib\libc99-pic30-elf.a(typefx.XX_o)
+ .debug_info      0x00318f         0x9f c:/program files/microchip/xc16/v2.00/bin/bin/../../lib\libc99-pic30-elf.a(propnanfx.XX_o)
+ .debug_info      0x00322e         0x8f c:/program files/microchip/xc16/v2.00/bin/bin/../../lib\libc99-pic30-elf.a(floatdisf.XX_o)
+ .debug_info      0x0032bd         0x91 c:/program files/microchip/xc16/v2.00/bin/bin/../../lib\libc99-pic30-elf.a(floatundisf.XX_o)
+ .debug_info      0x00334e         0x8b c:/program files/microchip/xc16/v2.00/bin/bin/../../lib\libc99-pic30-elf.a(fpack.XX_o)
  *(.gnu.linkonce.wi.*)
 
-.debug_abbrev     0x000000        0x277
+.debug_abbrev     0x000000        0x29d
  *(.debug_abbrev)
- .debug_abbrev    0x000000        0x19b build/default/production/main.o
- .debug_abbrev    0x00019b         0x14 c:/program files/microchip/xc16/v2.00/bin/bin/../../lib\libc99-pic30-elf.a(fixsfsi.XX_o)
- .debug_abbrev    0x0001af         0x14 c:/program files/microchip/xc16/v2.00/bin/bin/../../lib\libc99-pic30-elf.a(floatsisf.XX_o)
- .debug_abbrev    0x0001c3         0x14 c:/program files/microchip/xc16/v2.00/bin/bin/../../lib\libc99-pic30-elf.a(funpack.XX_o)
- .debug_abbrev    0x0001d7         0x14 c:/program files/microchip/xc16/v2.00/bin/bin/../../lib\libc99-pic30-elf.a(mulsf3x.XX_o)
- .debug_abbrev    0x0001eb         0x14 c:/program files/microchip/xc16/v2.00/bin/bin/../../lib\libc99-pic30-elf.a(dnrmpackfx.XX_o)
- .debug_abbrev    0x0001ff         0x14 c:/program files/microchip/xc16/v2.00/bin/bin/../../lib\libc99-pic30-elf.a(unpackdnrmfx.XX_o)
- .debug_abbrev    0x000213         0x14 c:/program files/microchip/xc16/v2.00/bin/bin/../../lib\libc99-pic30-elf.a(typefx.XX_o)
- .debug_abbrev    0x000227         0x14 c:/program files/microchip/xc16/v2.00/bin/bin/../../lib\libc99-pic30-elf.a(propnanfx.XX_o)
- .debug_abbrev    0x00023b         0x14 c:/program files/microchip/xc16/v2.00/bin/bin/../../lib\libc99-pic30-elf.a(floatdisf.XX_o)
- .debug_abbrev    0x00024f         0x14 c:/program files/microchip/xc16/v2.00/bin/bin/../../lib\libc99-pic30-elf.a(floatundisf.XX_o)
- .debug_abbrev    0x000263         0x14 c:/program files/microchip/xc16/v2.00/bin/bin/../../lib\libc99-pic30-elf.a(fpack.XX_o)
+ .debug_abbrev    0x000000        0x1c1 build/default/production/main.o
+ .debug_abbrev    0x0001c1         0x14 c:/program files/microchip/xc16/v2.00/bin/bin/../../lib\libc99-pic30-elf.a(fixsfsi.XX_o)
+ .debug_abbrev    0x0001d5         0x14 c:/program files/microchip/xc16/v2.00/bin/bin/../../lib\libc99-pic30-elf.a(floatsisf.XX_o)
+ .debug_abbrev    0x0001e9         0x14 c:/program files/microchip/xc16/v2.00/bin/bin/../../lib\libc99-pic30-elf.a(funpack.XX_o)
+ .debug_abbrev    0x0001fd         0x14 c:/program files/microchip/xc16/v2.00/bin/bin/../../lib\libc99-pic30-elf.a(mulsf3x.XX_o)
+ .debug_abbrev    0x000211         0x14 c:/program files/microchip/xc16/v2.00/bin/bin/../../lib\libc99-pic30-elf.a(dnrmpackfx.XX_o)
+ .debug_abbrev    0x000225         0x14 c:/program files/microchip/xc16/v2.00/bin/bin/../../lib\libc99-pic30-elf.a(unpackdnrmfx.XX_o)
+ .debug_abbrev    0x000239         0x14 c:/program files/microchip/xc16/v2.00/bin/bin/../../lib\libc99-pic30-elf.a(typefx.XX_o)
+ .debug_abbrev    0x00024d         0x14 c:/program files/microchip/xc16/v2.00/bin/bin/../../lib\libc99-pic30-elf.a(propnanfx.XX_o)
+ .debug_abbrev    0x000261         0x14 c:/program files/microchip/xc16/v2.00/bin/bin/../../lib\libc99-pic30-elf.a(floatdisf.XX_o)
+ .debug_abbrev    0x000275         0x14 c:/program files/microchip/xc16/v2.00/bin/bin/../../lib\libc99-pic30-elf.a(floatundisf.XX_o)
+ .debug_abbrev    0x000289         0x14 c:/program files/microchip/xc16/v2.00/bin/bin/../../lib\libc99-pic30-elf.a(fpack.XX_o)
 
-.debug_line       0x000000        0x743
+.debug_line       0x000000        0x769
  *(.debug_line)
- .debug_line      0x000000        0x2f5 build/default/production/main.o
- .debug_line      0x0002f5         0x56 c:/program files/microchip/xc16/v2.00/bin/bin/../../lib\libc99-pic30-elf.a(fixsfsi.XX_o)
- .debug_line      0x00034b         0x3a c:/program files/microchip/xc16/v2.00/bin/bin/../../lib\libc99-pic30-elf.a(floatsisf.XX_o)
- .debug_line      0x000385         0x4a c:/program files/microchip/xc16/v2.00/bin/bin/../../lib\libc99-pic30-elf.a(funpack.XX_o)
- .debug_line      0x0003cf         0xcc c:/program files/microchip/xc16/v2.00/bin/bin/../../lib\libc99-pic30-elf.a(mulsf3x.XX_o)
- .debug_line      0x00049b         0x72 c:/program files/microchip/xc16/v2.00/bin/bin/../../lib\libc99-pic30-elf.a(dnrmpackfx.XX_o)
- .debug_line      0x00050d         0x7a c:/program files/microchip/xc16/v2.00/bin/bin/../../lib\libc99-pic30-elf.a(unpackdnrmfx.XX_o)
- .debug_line      0x000587         0x5e c:/program files/microchip/xc16/v2.00/bin/bin/../../lib\libc99-pic30-elf.a(typefx.XX_o)
- .debug_line      0x0005e5         0x51 c:/program files/microchip/xc16/v2.00/bin/bin/../../lib\libc99-pic30-elf.a(propnanfx.XX_o)
- .debug_line      0x000636         0x47 c:/program files/microchip/xc16/v2.00/bin/bin/../../lib\libc99-pic30-elf.a(floatdisf.XX_o)
- .debug_line      0x00067d         0x6c c:/program files/microchip/xc16/v2.00/bin/bin/../../lib\libc99-pic30-elf.a(floatundisf.XX_o)
- .debug_line      0x0006e9         0x5a c:/program files/microchip/xc16/v2.00/bin/bin/../../lib\libc99-pic30-elf.a(fpack.XX_o)
+ .debug_line      0x000000        0x31b build/default/production/main.o
+ .debug_line      0x00031b         0x56 c:/program files/microchip/xc16/v2.00/bin/bin/../../lib\libc99-pic30-elf.a(fixsfsi.XX_o)
+ .debug_line      0x000371         0x3a c:/program files/microchip/xc16/v2.00/bin/bin/../../lib\libc99-pic30-elf.a(floatsisf.XX_o)
+ .debug_line      0x0003ab         0x4a c:/program files/microchip/xc16/v2.00/bin/bin/../../lib\libc99-pic30-elf.a(funpack.XX_o)
+ .debug_line      0x0003f5         0xcc c:/program files/microchip/xc16/v2.00/bin/bin/../../lib\libc99-pic30-elf.a(mulsf3x.XX_o)
+ .debug_line      0x0004c1         0x72 c:/program files/microchip/xc16/v2.00/bin/bin/../../lib\libc99-pic30-elf.a(dnrmpackfx.XX_o)
+ .debug_line      0x000533         0x7a c:/program files/microchip/xc16/v2.00/bin/bin/../../lib\libc99-pic30-elf.a(unpackdnrmfx.XX_o)
+ .debug_line      0x0005ad         0x5e c:/program files/microchip/xc16/v2.00/bin/bin/../../lib\libc99-pic30-elf.a(typefx.XX_o)
+ .debug_line      0x00060b         0x51 c:/program files/microchip/xc16/v2.00/bin/bin/../../lib\libc99-pic30-elf.a(propnanfx.XX_o)
+ .debug_line      0x00065c         0x47 c:/program files/microchip/xc16/v2.00/bin/bin/../../lib\libc99-pic30-elf.a(floatdisf.XX_o)
+ .debug_line      0x0006a3         0x6c c:/program files/microchip/xc16/v2.00/bin/bin/../../lib\libc99-pic30-elf.a(floatundisf.XX_o)
+ .debug_line      0x00070f         0x5a c:/program files/microchip/xc16/v2.00/bin/bin/../../lib\libc99-pic30-elf.a(fpack.XX_o)
 
 .debug_frame      0x000000        0x324
  *(.debug_frame)
@@ -1150,27 +1150,27 @@ __c30_signature
                   0x0006c0                  _setupQRDs
                   0x00072a                  _setupDistanceSensors
                   0x000732                  _setupServo
-                  0x000766                  _main
-                  0x000784                  _lineFollowingFSM
-                  0x0008f2                  _taskDetectionFSM
-                  0x00096e                  _canyonNavigationFSM
-                  0x0009ac                  _sampleReturnFSM
-                  0x000a58                  _tankTurn
-                  0x000aba                  _driveStraight
-                  0x000ad4                  _slightRight
-                  0x000aee                  _slightLeft
-                  0x000b08                  _hardRight
-                  0x000b22                  _hardLeft
-                  0x000b3c                  _stop
-                  0x000b4a                  _search
-                  0x000b50                  _debugLED
-                  0x000b6c                  _openGate
-                  0x000b7a                  _closeGate
-                  0x000b88                  _rightQRD
-                  0x000ba2                  _midQRD
-                  0x000bbc                  _leftQRD
-                  0x000bd6                  _taskdetectionQRD
-                  0x000bf0                  _ballQRD
+                  0x000766                  _rightQRD
+                  0x000780                  _midQRD
+                  0x00079a                  _leftQRD
+                  0x0007b4                  _taskdetectionQRD
+                  0x0007ce                  _ballQRD
+                  0x0007e8                  _driveStraight
+                  0x000802                  _slightRight
+                  0x00081c                  _slightLeft
+                  0x000836                  _hardRight
+                  0x000850                  _hardLeft
+                  0x00086a                  _stop
+                  0x000878                  _search
+                  0x00087e                  _debugLED
+                  0x00089a                  _openGate
+                  0x0008a8                  _closeGate
+                  0x0008b6                  _main
+                  0x0008d4                  _lineFollowingFSM
+                  0x000a42                  _taskDetectionFSM
+                  0x000abe                  _canyonNavigationFSM
+                  0x000afc                  _sampleReturnFSM
+                  0x000ba8                  _tankTurn
 
 .dinit            0x000c0a         0x12
  .dinit           0x000c0a         0x12 data_init
