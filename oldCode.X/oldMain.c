@@ -8,21 +8,30 @@
 
 #include "xc.h"
 #include "setup.h"
-#include "checkState.h"
-#include "control.h"
 #pragma config FNOSC = LPRC //31 kHz oscillator
 
 #define CW 0
 #define CCW 1
+#define REST 0
 #define ONEREV 200
 #define ONESEC 1938
-#define TANKTURNSPEED 100
-#define FRONTSENSOR !_RB8
+#define WHEELDIAMETER 69.5 //mm
+#define TRACKWIDTH 221 //mm
+#define FAST 75 //TODO:TRIAL AND ERROR TO DECIDE THE BEST VALUE FOR SPEED
+#define SORTAFAST 100
+#define SLOW 260
+#define THRESHOLD 2500
 #define LIMIT 300
+#define FRONTSENSOR !_RB8
+#define OPENSERVO 30
+#define CLOSESERVO 10
+#define SERVOPERIOD 387
 
 //GLOBAL VARIABLES
+int OC1Steps = 0;
 int OC2Steps = 0;
-float turnCoeff = 1.7666; //TRACKWIDTH/(1.8 * WHEELDIAMETER)
+int OC3Steps = 0;
+float turnCoeff = TRACKWIDTH / (1.8 * WHEELDIAMETER); //1.7666
 int stepsToTake = 0;
 int lineCount = 0;
 
@@ -33,6 +42,7 @@ enum {GOSTRAIGHT, WALLDETECTED} canyonState;
 enum {WAIT, WHITEBALL, BLACKBALL} sampleState;
 
 //FUNCTION PROTOTYPES
+
 //FINITE STATE MACHINES
 void lineFollowingFSM();
 void taskDetectionFSM();
@@ -40,6 +50,22 @@ void canyonNavigationFSM();
 void sampleReturnFSM();
 //CONTROL FUNCTIONS
 void tankTurn(int degrees, int dir);
+void driveStraight();
+void slightRight();
+void slightLeft();
+void hardRight();
+void hardLeft();
+void stop();
+void search();
+void debugLED(int onOff);
+void openGate();
+void closeGate();
+//CHECK STATE FUNCTIONS
+int rightQRD(); //RETURNS 1 IF BLACK IS DETECTED
+int midQRD(); //RETURNS 1 IF BLACK IS DETECTED
+int leftQRD(); //RETURNS 1 IF BLACK IS DETECTED
+int taskdetectionQRD(); //RETURNS 1 IF BLACK IS DETECTED
+int ballQRD();
 //INTERRUPTS
 void __attribute__((interrupt, no_auto_psv)) _OC1Interrupt(void);
 void __attribute__((interrupt, no_auto_psv)) _OC2Interrupt(void);
@@ -54,20 +80,32 @@ int main(void) {
     setupTimer();
     setupDistanceSensors();
     setupServo();
-    setupDebugLED();
     
-    //SET UP PARAMETERS FOR STATE MACHINES
+    //SET UP PARAMETERS FOR LINE FOLLOWING STATE MACHINE
     lineFollowingState = STRAIGHT;
     driveStraight();
+    
+    //SET UP PARAMETERS FOR TASK DETECTION STATE MACHINE
     taskDetectionState = TASKDETECTIONDEFAULT;
+    
+    //SET UP PARAMETERS FOR CANYON NAVIGATION STATE MACHINE
     canyonState = GOSTRAIGHT;
+    
+    //SET UP PARAMETERS FOR SAMPLE RETURN STATE MACHINE
     sampleState = WAIT;
     closeGate();
-
     
+    //SET UP LED FOR DEBUGGING
+    _TRISB7 = 0;
+    
+
+   
     while(1){     
         
-        sampleReturnFSM();
+//        lineFollowingFSM();
+//        taskDetectionFSM();
+//        canyonNavigationFSM();
+        
         
     }
     
@@ -77,12 +115,21 @@ int main(void) {
 
 
 //INTERRUPTS
+void __attribute__((interrupt, no_auto_psv)) _OC1Interrupt(void){
+    _OC1IF = 0;
+    
+    ++OC1Steps;
+}
 void __attribute__((interrupt, no_auto_psv)) _OC2Interrupt(void){
     _OC2IF = 0;
     
     ++OC2Steps;
 }
-
+void __attribute__((interrupt, no_auto_psv)) _OC3Interrupt(void){
+    _OC3IF = 0;
+    
+    ++OC3Steps;
+}
 
 //FSM FUNCTION DEFINITIONS
 void lineFollowingFSM(){
@@ -301,7 +348,6 @@ void sampleReturnFSM(){
             break;
     }
 }
-
 //CONTROL FUNCTION DEFINITIONS
 void tankTurn(int degrees, int dir){
     
@@ -313,13 +359,158 @@ void tankTurn(int degrees, int dir){
     OC2Steps = 0;
     
     //SET PERIOD AND DUTY CYCLE
-    OC2RS = TANKTURNSPEED;
-    OC2R = TANKTURNSPEED/2;
-    OC3RS = TANKTURNSPEED;
-    OC3R = TANKTURNSPEED/2;
+    OC2RS = SORTAFAST;
+    OC2R = SORTAFAST/2;
+    OC3RS = SORTAFAST;
+    OC3R = SORTAFAST/2;
     
     //WRITE TO DIRECTION PINS
     _LATA0 = dir;
     _LATA1 = dir;
 }
-
+void driveStraight(){
+    
+    //SET PERIOD AND DUTY CYCLE
+    OC2RS = FAST;
+    OC2R = FAST/2;
+    OC3RS = FAST;
+    OC3R = FAST/2;
+    
+    //WRITE TO DIRECTION PINS
+    _LATA0 = 1;
+    _LATA1 = 0;
+    
+}
+void slightRight(){
+    
+    //SET PERIOD AND DUTY CYCLE
+    //RIGHT
+    OC2RS = SORTAFAST;
+    OC2R = SORTAFAST/2;
+    //LEFT
+    OC3RS = FAST;
+    OC3R = FAST/2;
+    
+    //WRITE TO DIRECTION PINS
+    _LATA0 = 1; //RIGHT
+    _LATA1 = 0; //LEFT
+    
+}
+void slightLeft(){
+    
+    //SET PERIOD AND DUTY CYCLE
+    //RIGHT
+    OC2RS = FAST;
+    OC2R = FAST/2;
+    //LEFT
+    OC3RS = SORTAFAST;
+    OC3R = SORTAFAST/2;
+    
+    //WRITE TO DIRECTION PINS
+    _LATA0 = 1; //RIGHT
+    _LATA1 = 0; //LEFT
+}
+void hardRight(){
+    
+    //SET PERIOD AND DUTY CYCLE
+    //RIGHT
+    OC2RS = SLOW;
+    OC2R = SLOW/2;
+    //LEFT
+    OC3RS = FAST;
+    OC3R = FAST/2;
+    
+    //WRITE TO DIRECTION PINS
+    _LATA0 = 1; //RIGHT
+    _LATA1 = 0; //LEFT
+}
+void hardLeft(){
+    
+    //SET PERIOD AND DUTY CYCLE
+    //RIGHT
+    OC2RS = FAST;
+    OC2R = FAST/2;
+    //LEFT
+    OC3RS = SLOW;
+    OC3R = SLOW/2;
+    
+    //WRITE TO DIRECTION PINS
+    _LATA0 = 1; //RIGHT
+    _LATA1 = 0; //LEFT
+}
+void stop(){
+    
+     //SET PERIOD AND DUTY CYCLE
+    //RIGHT
+    OC2RS = 0;
+    OC2R = 0;
+    //LEFT
+    OC3RS = 0;
+    OC3R = 0;
+    
+}
+void search(){
+    //TODO: Define this function
+}
+void debugLED(int onOff){
+    _LATB7 = onOff;
+}
+void openGate(){
+    OC1RS = SERVOPERIOD;
+    OC1R = OPENSERVO;
+}
+void closeGate(){
+    OC1RS = SERVOPERIOD;
+    OC1R = CLOSESERVO;
+}
+//CHECK STATE FUNCTION DEFINITIONS
+int rightQRD(){
+    int onOffr;
+    if(ADC1BUF4 > THRESHOLD){
+        onOffr = 1;
+    }else{
+        onOffr = 0;
+    }
+    
+    return onOffr;
+}
+int midQRD(){
+    int onOffm;
+    if(ADC1BUF13 > THRESHOLD){
+        onOffm = 1;
+    }else{
+        onOffm = 0;
+    }
+    
+    return onOffm;
+}
+int leftQRD(){
+    int onOffl;
+    if(ADC1BUF14 > THRESHOLD){
+        onOffl = 1;
+    }else{
+        onOffl = 0;
+    }
+    
+    return onOffl;
+}
+int taskdetectionQRD(){
+    int onOfft;
+    if(ADC1BUF12 > THRESHOLD){
+        onOfft = 1;
+    }else{
+        onOfft = 0;
+    }
+    
+    return onOfft;
+}
+int ballQRD(){
+   int onOffb;
+    if(ADC1BUF11 > THRESHOLD){
+        onOffb = 1;
+    }else{
+        onOffb = 0;
+    }
+    
+    return onOffb; 
+}
