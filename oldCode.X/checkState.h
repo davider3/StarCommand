@@ -1,8 +1,8 @@
-#ifndef CHECK_STATE_H
-#define	CHECK_STATE_H
+#ifndef CHECK_STATE__H
+#define	CHECK_STATE__H
 
 #include <xc.h> 
-#define THRESHOLD 1500
+#define THRESHOLD 2500
 
 int rightQRD(){
     int onOffr;
@@ -59,5 +59,5 @@ int ballQRD(){
     return onOffb; 
 }
 
-#endif	/* CHECK_STATE_H */
+#endif	
 

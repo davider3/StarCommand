@@ -9,7 +9,7 @@
 #include "xc.h"
 #include "setup.h"
 #include "checkState.h"
-#include "control.h"
+#include "controlFunctions.h"
 #pragma config FNOSC = LPRC //31 kHz oscillator
 
 #define CW 0
@@ -21,13 +21,16 @@
 #define LIMIT 300
 
 //GLOBAL VARIABLES
+int OC1Steps = 0;
 int OC2Steps = 0;
+int OC3Steps = 0;
 float turnCoeff = 1.7666; //TRACKWIDTH/(1.8 * WHEELDIAMETER)
 int stepsToTake = 0;
 int lineCount = 0;
+int prevState = 0;
 
 //FSM VARIABLES
-enum {STRAIGHT, SLIGHTRIGHT, SLIGHTLEFT, HARDRIGHT, HARDLEFT} lineFollowingState;
+enum {STRAIGHT, SLIGHTRIGHT, SLIGHTLEFT, HARDRIGHT, HARDLEFT, SEARCH} lineFollowingState;
 enum {TASKDETECTIONDEFAULT, TASKDETECTIONBLACK, TASKDETECTIONWHITE} taskDetectionState;
 enum {GOSTRAIGHT, WALLDETECTED} canyonState;
 enum {WAIT, WHITEBALL, BLACKBALL} sampleState;
@@ -58,17 +61,16 @@ int main(void) {
     
     //SET UP PARAMETERS FOR STATE MACHINES
     lineFollowingState = STRAIGHT;
-    driveStraight();
+    //driveStraight();
     taskDetectionState = TASKDETECTIONDEFAULT;
     canyonState = GOSTRAIGHT;
     sampleState = WAIT;
-    closeGate();
+   // closeGate();
 
     
-    while(1){     
-        
-        sampleReturnFSM();
-        
+    while(1){    
+        lineFollowingFSM();
+        taskDetectionFSM();
     }
     
     return 0;
@@ -77,12 +79,21 @@ int main(void) {
 
 
 //INTERRUPTS
+void __attribute__((interrupt, no_auto_psv)) _OC1Interrupt(void){
+    _OC1IF = 0;
+    
+    ++OC1Steps;
+}
 void __attribute__((interrupt, no_auto_psv)) _OC2Interrupt(void){
     _OC2IF = 0;
     
     ++OC2Steps;
 }
-
+void __attribute__((interrupt, no_auto_psv)) _OC3Interrupt(void){
+    _OC3IF = 0;
+    
+    ++OC3Steps;
+}
 
 //FSM FUNCTION DEFINITIONS
 void lineFollowingFSM(){
@@ -111,6 +122,7 @@ void lineFollowingFSM(){
                 
                 
             case SLIGHTRIGHT:
+                prevState = 1;
                 if(rightQRD()){ //RIGHTQRD IS BLACK
                     if(!midQRD()){
                         hardRight();
@@ -127,11 +139,16 @@ void lineFollowingFSM(){
                 }else if(midQRD()){ //IF MIDDLE IS BLACK
                     driveStraight();
                     lineFollowingState = STRAIGHT;
+                }
+                else{
+                    lineFollowingState = SEARCH;
+                    search(prevState);
                 }
                 break;
                 
                 
             case SLIGHTLEFT:
+                prevState = 0;
                 if(rightQRD()){ //RIGHTQRD IS BLACK
                     if(midQRD()){
                         slightRight();
@@ -149,10 +166,15 @@ void lineFollowingFSM(){
                     driveStraight();
                     lineFollowingState = STRAIGHT;
                 }
+                else{
+                    lineFollowingState = SEARCH;
+                    search(prevState);
+                }
                 break;
                 
                 
             case HARDRIGHT:
+                prevState = 1;
                 if(rightQRD()){ //RIGHTQRD IS BLACK
                     if(midQRD()){
                         slightRight();
@@ -170,10 +192,15 @@ void lineFollowingFSM(){
                     driveStraight();
                     lineFollowingState = STRAIGHT;
                 }
+                else{
+                    lineFollowingState = SEARCH;
+                    search(prevState);
+                }
                 break;
                 
                 
             case HARDLEFT:
+                prevState = 0;
                 if(rightQRD()){ //RIGHTQRD IS BLACK
                     if(midQRD()){
                         slightRight();
@@ -191,6 +218,35 @@ void lineFollowingFSM(){
                     driveStraight();
                     lineFollowingState = STRAIGHT;
                 }
+                else{
+                    lineFollowingState = SEARCH;
+                    search(prevState);
+                }
+                break;
+                
+            case SEARCH:
+                if(rightQRD()){ //RIGHTQRD IS BLACK
+                    if(midQRD()){
+                        slightRight();
+                        lineFollowingState = SLIGHTRIGHT;
+                    }else{
+                        hardRight();
+                        lineFollowingState = HARDRIGHT;
+                    }
+                }else if(leftQRD()){ //LEFTQRD IS BLACK
+                    if(midQRD()){
+                        slightLeft();
+                        lineFollowingState = SLIGHTLEFT;
+                    }else{
+                        hardLeft();
+                        lineFollowingState = HARDLEFT;
+                    }
+                }else if(midQRD()){ //IF MIDDLE IS BLACK
+                    driveStraight();
+                    lineFollowingState = STRAIGHT;
+                }
+            
+            
                 break;
                 
                 
