@@ -40,7 +40,6 @@ enum {GOSTRAIGHT, WALLDETECTED} canyonState;
 enum {WAIT, WHITEBALL, BLACKBALL} sampleState;
 
 //FUNCTION PROTOTYPES
-
 //FINITE STATE MACHINES
 void lineFollowingFSM();
 void taskDetectionFSM();
