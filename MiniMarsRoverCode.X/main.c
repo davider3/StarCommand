@@ -39,6 +39,7 @@ int lineCount = 0;
 enum {STRAIGHT, SLIGHTRIGHT, SLIGHTLEFT, HARDRIGHT, HARDLEFT} lineFollowingState;
 enum {TASKDETECTIONDEFAULT, TASKDETECTIONBLACK, TASKDETECTIONWHITE} taskDetectionState;
 enum {GOSTRAIGHT, WALLDETECTED} canyonState;
+enum {WAIT, WHITEBALL, BLACKBALL} sampleState;
 
 //FUNCTION PROTOTYPES
 
@@ -46,6 +47,7 @@ enum {GOSTRAIGHT, WALLDETECTED} canyonState;
 void lineFollowingFSM();
 void taskDetectionFSM();
 void canyonNavigationFSM();
+void sampleReturnFSM();
 //CONTROL FUNCTIONS
 void tankTurn(int degrees, int dir);
 void driveStraight();
@@ -53,11 +55,11 @@ void slightRight();
 void slightLeft();
 void hardRight();
 void hardLeft();
+void stop();
 void search();
 void debugLED(int onOff);
 void openGate();
 void closeGate();
-void sampleReturn();
 //CHECK STATE FUNCTIONS
 int rightQRD(); //RETURNS 1 IF BLACK IS DETECTED
 int midQRD(); //RETURNS 1 IF BLACK IS DETECTED
@@ -77,6 +79,7 @@ int main(void) {
     setupQRDs();
     setupTimer();
     setupDistanceSensors();
+    setupServo();
     
     //SET UP PARAMETERS FOR LINE FOLLOWING STATE MACHINE
     lineFollowingState = STRAIGHT;
@@ -88,22 +91,21 @@ int main(void) {
     //SET UP PARAMETERS FOR CANYON NAVIGATION STATE MACHINE
     canyonState = GOSTRAIGHT;
     
+    //SET UP PARAMETERS FOR SAMPLE RETURN STATE MACHINE
+    sampleState = WAIT;
+    closeGate();
+    
     //SET UP LED FOR DEBUGGING
     _TRISB7 = 0;
     
-    
+
    
     while(1){     
         
 //        lineFollowingFSM();
 //        taskDetectionFSM();
 //        canyonNavigationFSM();
-        if(TMR1 > ONESEC){
-            sampleReturn();
-            TMR1 = 0;
-        }else if(TMR1 < 2*ONESEC){
-            closeGate();
-        }
+        sampleReturnFSM();
         
     }
     
@@ -299,6 +301,53 @@ void canyonNavigationFSM(){
             break;
     }
 }
+void sampleReturnFSM(){
+    switch(sampleState){
+        case WAIT:
+            if(OC2Steps >= stepsToTake){
+               stop();
+               OC2Steps = 0;
+            }
+            if(TMR1 > 3*ONESEC){
+                if(ballQRD()){
+                    sampleState = BLACKBALL;
+                    tankTurn(90, CW);
+                    TMR1 = 0;
+                }else if(!ballQRD()){
+                    sampleState = WHITEBALL;
+                    tankTurn(90, CCW);
+                    TMR1 = 0;
+                }
+            }
+            break;
+            
+        case WHITEBALL:
+            if(OC2Steps >= stepsToTake){
+                openGate();
+                OC2Steps = 0;
+                stop();
+            }else if(TMR1 > 3*ONESEC){
+                sampleState = WAIT;
+                tankTurn(90, CW);
+                closeGate();
+                TMR1 = 0;
+            }
+            break;
+            
+        case BLACKBALL:
+            if(OC2Steps >= stepsToTake){
+                openGate();
+                OC2Steps = 0;
+                stop();
+            }else if(TMR1 > 3*ONESEC){
+                sampleState = WAIT;
+                tankTurn(90, CCW);
+                closeGate();
+                TMR1 = 0;
+            }
+            break;
+    }
+}
 //CONTROL FUNCTION DEFINITIONS
 void tankTurn(int degrees, int dir){
     
@@ -310,10 +359,10 @@ void tankTurn(int degrees, int dir){
     OC2Steps = 0;
     
     //SET PERIOD AND DUTY CYCLE
-    OC2RS = FAST;
-    OC2R = FAST/2;
-    OC3RS = FAST;
-    OC3R = FAST/2;
+    OC2RS = SORTAFAST;
+    OC2R = SORTAFAST/2;
+    OC3RS = SORTAFAST;
+    OC3R = SORTAFAST/2;
     
     //WRITE TO DIRECTION PINS
     _LATA0 = dir;
@@ -389,6 +438,17 @@ void hardLeft(){
     _LATA0 = 1; //RIGHT
     _LATA1 = 0; //LEFT
 }
+void stop(){
+    
+     //SET PERIOD AND DUTY CYCLE
+    //RIGHT
+    OC2RS = 0;
+    OC2R = 0;
+    //LEFT
+    OC3RS = 0;
+    OC3R = 0;
+    
+}
 void search(){
     //TODO: Define this function
 }
@@ -402,16 +462,6 @@ void openGate(){
 void closeGate(){
     OC1RS = SERVOPERIOD;
     OC1R = CLOSESERVO;
-}
-void sampleReturn(){
-    if(ballQRD()){
-        tankTurn(90, CW);
-        openGate();
-    }
-    else if(!ballQRD()){
-        tankTurn(90,CCW);
-        openGate();
-    }
 }
 //CHECK STATE FUNCTION DEFINITIONS
 int rightQRD(){

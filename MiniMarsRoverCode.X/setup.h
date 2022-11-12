@@ -26,7 +26,8 @@ void setupSteppers(){
     OC3CON1bits.OCM = 0b110;
     
     _OC3IP = 4; // Select OC3 interrupt priority
-    _OC3IE = 0; // Disable OC3 interrupt
+    _OC3IE = 1; // Enable OC3 interrupt
+    _OC3IF = 0; // Clear OC3 interrupt flag
     
     //SET UP DIRECTION PINS
     _TRISA0 = 0;
