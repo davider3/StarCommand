@@ -76,6 +76,7 @@ int main(void) {
     setupQRDs();
     setupTimer();
     setupDistanceSensors();
+    setupServo();
     
     //SET UP PARAMETERS FOR LINE FOLLOWING STATE MACHINE
     lineFollowingState = STRAIGHT;
@@ -94,8 +95,9 @@ int main(void) {
    
     while(1){     
         
-        lineFollowingFSM();
-        taskDetectionFSM();
+        openGate();
+        //lineFollowingFSM();
+        //taskDetectionFSM();
         //canyonNavigationFSM();
         
     }
