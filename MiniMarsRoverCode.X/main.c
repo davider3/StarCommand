@@ -23,8 +23,8 @@
 #define THRESHOLD 2500
 #define LIMIT 300
 #define FRONTSENSOR !_RB8
-#define OPENSERVO 31
-#define CLOSESERVO 15
+#define OPENSERVO 30
+#define CLOSESERVO 10
 #define SERVOPERIOD 387
 
 //GLOBAL VARIABLES
@@ -95,9 +95,15 @@ int main(void) {
    
     while(1){     
         
-        lineFollowingFSM();
-        taskDetectionFSM();
-        //canyonNavigationFSM();
+//        lineFollowingFSM();
+//        taskDetectionFSM();
+//        canyonNavigationFSM();
+        if(TMR1 > ONESEC){
+            sampleReturn();
+            TMR1 = 0;
+        }else if(TMR1 < 2*ONESEC){
+            closeGate();
+        }
         
     }
     
@@ -400,11 +406,11 @@ void closeGate(){
 void sampleReturn(){
     if(ballQRD()){
         tankTurn(90, CW);
-        //TODO: Add code to open gate, close it, and then return to driving straight
+        openGate();
     }
     else if(!ballQRD()){
         tankTurn(90,CCW);
-        //TODO: Add code to open gate, close it, and then return to driving straight
+        openGate();
     }
 }
 //CHECK STATE FUNCTION DEFINITIONS
