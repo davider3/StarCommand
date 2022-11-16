@@ -16,7 +16,7 @@
       <itemPath>prevCode.txt</itemPath>
       <itemPath>setup.h</itemPath>
       <itemPath>checkState.h</itemPath>
-      <itemPath>control.h</itemPath>
+      <itemPath>controlFunctions.h</itemPath>
     </logicalFolder>
     <logicalFolder name="ExternalFiles"
                    displayName="Important Files"

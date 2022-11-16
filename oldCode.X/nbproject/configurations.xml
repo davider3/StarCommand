@@ -14,6 +14,8 @@
                    projectFiles="true">
       <itemPath>oldMain.c</itemPath>
       <itemPath>setup.h</itemPath>
+      <itemPath>control.h</itemPath>
+      <itemPath>checkState.h</itemPath>
     </logicalFolder>
     <logicalFolder name="ExternalFiles"
                    displayName="Important Files"
@@ -197,6 +199,9 @@
       <PICkit3PlatformTool>
         <property key="firmware.download.all" value="false"/>
       </PICkit3PlatformTool>
+      <Tool>
+        <property key="firmware.download.all" value="false"/>
+      </Tool>
     </conf>
   </confs>
 </configurationDescriptor>
