@@ -57,10 +57,8 @@ int main(void) {
     setupTimer();
     setupDistanceSensors();
     setupServo();
-<<<<<<< HEAD
-=======
     setupDebugLED();
->>>>>>> 1dd021ab83e898b3f5d6f976d0651545cd48d3f0
+
     
     //SET UP PARAMETERS FOR STATE MACHINES
     lineFollowingState = STRAIGHT;
@@ -71,24 +69,17 @@ int main(void) {
    // closeGate();
 
     
-<<<<<<< HEAD
+
     //SET UP LED FOR DEBUGGING
     _TRISB7 = 0;
     
     
    
-    while(1){     
-        
-        openGate();
-        //lineFollowingFSM();
-        //taskDetectionFSM();
-        //canyonNavigationFSM();
-        
-=======
+ 
+
     while(1){    
         lineFollowingFSM();
         taskDetectionFSM();
->>>>>>> 1dd021ab83e898b3f5d6f976d0651545cd48d3f0
     }
     
     return 0;
