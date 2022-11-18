@@ -53,33 +53,25 @@ void __attribute__((interrupt, no_auto_psv)) _OC3Interrupt(void);
 int main(void) {
     
     setupSteppers();
+    setupADC();
+    setupPhotodiode();
     setupQRDs();
     setupTimer();
     setupDistanceSensors();
     setupServo();
     setupDebugLED();
-
-    
+    turnOnADC();
+  
     //SET UP PARAMETERS FOR STATE MACHINES
     lineFollowingState = STRAIGHT;
-    //driveStraight();
+    driveStraight();
     taskDetectionState = TASKDETECTIONDEFAULT;
     canyonState = GOSTRAIGHT;
     sampleState = WAIT;
-   // closeGate();
 
-    
-
-    //SET UP LED FOR DEBUGGING
-    _TRISB7 = 0;
-    
-    
-   
- 
 
     while(1){    
-        lineFollowingFSM();
-        taskDetectionFSM();
+        sampleReturnFSM();
     }
     
     return 0;

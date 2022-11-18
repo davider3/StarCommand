@@ -59,5 +59,9 @@ int ballQRD(){
     return onOffb; 
 }
 
+int photodiode(){
+    return ADC1BUF9;
+}
+
 #endif	/* CHECK_STATE_H */
 

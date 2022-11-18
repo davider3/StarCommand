@@ -44,8 +44,7 @@ void setupTimer(){
     TMR1 = 0;       // Reset Timer1
 }
 
-void setupQRDs(){
-    //SETUP THE ADC 
+void setupADC(){
      
     _ADON = 0;    // Disable A/D module during configuration
     
@@ -60,7 +59,7 @@ void setupQRDs(){
     _NVCFG = 0;   // use VSS as negative reference
     _BUFREGEN = 1;// store results in buffer corresponding to channel number
     _CSCNA = 1;   // scanning mode
-    _SMPI = 4;    // NUMBER OF ANALOG PINS MINUS ONE
+    _SMPI = 5;    // NUMBER OF ANALOG PINS MINUS ONE
     _ALTS = 0;    // sample MUXA only
 
     // AD1CON3
@@ -68,6 +67,10 @@ void setupQRDs(){
     _SAMC = 1;    // sample every A/D period
     _ADCS = 0x3F; // TAD = 64*TCY
 
+}
+
+void setupQRDs(){
+    
     //RIGHT
     _TRISB2 = 1;
     _ANSB2 = 1;
@@ -92,10 +95,11 @@ void setupQRDs(){
     _TRISB13 = 1;
     _ANSB13 = 1;
     _CSS11 = 1;
-    
-    //TURN ON ADC
+        
+}
+
+void turnOnADC(){
     _ADON = 1;
-    
 }
 
 void setupDistanceSensors(){
@@ -121,6 +125,16 @@ void setupServo(){
 
 void setupDebugLED(){
     _TRISB7 = 0;
+}
+
+void setupPhotodiode(){
+    _TRISB15 = 1;
+    _ANSB15 = 1;
+    _CSS9 = 1;
+}
+
+void setupLaser(){
+    _TRISB8 = 0;
 }
 
 
