@@ -118,5 +118,13 @@ void closeGate(){
     OC1R = CLOSESERVO;
 }
 
+void turnOnLaser(){
+    _LATB8 = 1;
+}
+
+void turnOffLaser(){
+    _LATB8 = 0;
+}
+
 #endif	/* CONTROL_FUNCTIONS_H */
 

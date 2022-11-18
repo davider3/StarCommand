@@ -61,17 +61,25 @@ int main(void) {
     setupServo();
     setupDebugLED();
     turnOnADC();
+    setupLaser();
+    stop();
   
     //SET UP PARAMETERS FOR STATE MACHINES
     lineFollowingState = STRAIGHT;
-    driveStraight();
+    //driveStraight();
     taskDetectionState = TASKDETECTIONDEFAULT;
     canyonState = GOSTRAIGHT;
     sampleState = WAIT;
 
 
     while(1){    
-        sampleReturnFSM();
+        if(photodiode() > 1000){
+            turnOffLaser();
+            debugLED(0);
+        }else{
+            turnOnLaser();
+            debugLED(1);
+        }
     }
     
     return 0;
