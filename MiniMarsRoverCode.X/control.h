@@ -122,5 +122,20 @@ void turnOffLaser(){
     _LATB8 = 0;
 }
 
+/*
+void IRSearch(){
+    OC1RS = SERVOPERIOD;
+    OC1R = ServoHorizontal;
+    while(1){
+        if(OC1R < CLOSESERVO){
+            OC1R++; //Search for the IR sensor.
+        }
+        else if(OC1R = CLOSESERVO){
+            OC1R = 0; //Search starts from horizontal again if source is not found.
+        }
+    }
+}
+*/
+
 #endif	/* CONTROL_H */
 

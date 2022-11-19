@@ -81,6 +81,18 @@ int main(void) {
             debugLED(1);
         }
     }
+    /* Possible function for Milestone 11
+     
+     while(1){
+         if(photodiode < 1000){
+             turnOffLaser; //Turn off the laser
+             IRSearch(); //Move servo until the laser is found
+         }
+         else{
+             turnOnLaser();
+         }
+     }
+
     
     return 0;
 }
