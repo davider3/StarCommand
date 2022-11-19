@@ -126,5 +126,14 @@ void turnOffLaser(){
     _LATB8 = 0;
 }
 
+void IRSearch(){
+    //Servo opens door to horizontal
+    if(OC1R > CLOSESERVO){
+        OC1R--;
+    }
+    else{
+        OC1R = 25;
+    }
+}
 #endif	/* CONTROL_FUNCTIONS_H */
 
