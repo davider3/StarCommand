@@ -129,7 +129,10 @@ void turnOffLaser(){
 void IRSearch(){
     //Servo opens door to horizontal
     if(OC1R > CLOSESERVO){
-        OC1R--;
+        if(TMR1 > 400){
+        OC1R = OC1R - 0.5;
+        TMR1 = 0;
+    }
     }
     else{
         OC1R = 25;

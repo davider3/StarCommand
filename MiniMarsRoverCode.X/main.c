@@ -75,8 +75,8 @@ int main(void) {
     OC1R = 25;
     
     while(1){    
-        if(photodiode() > 1000){
-            turnOffLaser();
+        if(photodiode() < 500){
+            turnOffLaser(); 
             IRSearch();
         }else{
             turnOnLaser();
