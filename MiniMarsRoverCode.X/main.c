@@ -10,12 +10,12 @@
 #include "setup.h"
 #include "checkState.h"
 #include "controlFunctions.h"
-#pragma config FNOSC = LPRC //31 kHz oscillator
+#pragma config FNOSC = FRC //8 MHz oscillator
 
 #define CW 0
 #define CCW 1
 #define ONEREV 200
-#define ONESEC 1938
+#define ONESEC 1938 //TODO: Change for new Timer
 #define TANKTURNSPEED 100
 #define FRONTSENSOR !_RB8
 #define LIMIT 300
@@ -73,14 +73,16 @@ int main(void) {
 
     OC1RS = SERVOPERIOD;
     OC1R = 25;
+    closeGate();
     
     while(1){    
-        if(photodiode() < 500){
-            turnOffLaser(); 
-            IRSearch();
-        }else{
-            turnOnLaser();
-        }
+//        if(photodiode() < 500){
+//            turnOffLaser(); 
+//            IRSearch();
+//        }else{
+//            turnOnLaser();
+//        }
+        lineFollowingFSM();
     }
     return 0;
 }
