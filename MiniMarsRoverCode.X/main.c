@@ -83,6 +83,7 @@ int main(void) {
 //            turnOnLaser();
 //        }
         lineFollowingFSM();
+        taskDetectionFSM();
     }
     return 0;
 }
