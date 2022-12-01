@@ -16,16 +16,17 @@
 #define CCW 1
 #define ONEREV 200
 #define ONESEC 1938 //TODO: Change for new Timer
-#define TANKTURNSPEED 3000
-#define FORWARDSPEED 3000
+#define TANKTURNSPEED 6000
+#define FORWARDSPEED 6000
 #define FRONTSENSOR !_RB8
 #define LIMIT 300
+#define LANDERDISTANCE 630 //mm
 
 //GLOBAL VARIABLES
 int OC1Steps = 0;
 int OC2Steps = 0;
 int OC3Steps = 0;
-float turnCoeff = 3.8; //TRACKWIDTH/(.9 * WHEELDIAMETER)
+float turnCoeff = 4; //TRACKWIDTH/(.9 * WHEELDIAMETER)
 float forwardCoeff = 2.15; //400 / (PI * WHEELDIAMETER))
 int stepsToTake = 0;
 int lineCount = 0;
@@ -37,6 +38,7 @@ enum {ADJUST, GORIGHT, GOLEFT} lineFollowingState2;
 enum {TASKDETECTIONDEFAULT, TASKDETECTIONBLACK, TASKDETECTIONWHITE} taskDetectionState;
 enum {GOSTRAIGHT, WALLDETECTED} canyonState;
 enum {WAIT, WHITEBALL, BLACKBALL} sampleState;
+enum {FORWARD, TURN} startState;
 
 //FUNCTION PROTOTYPES
 //FINITE STATE MACHINES
@@ -46,6 +48,7 @@ void lineFollowingFSM3();
 void taskDetectionFSM();
 void canyonNavigationFSM();
 void sampleReturnFSM();
+void startFSM();
 //CONTROL FUNCTIONS
 void tankTurn(int degrees, int dir);
 void goForward(int mmDis, int dir);
@@ -56,9 +59,11 @@ void __attribute__((interrupt, no_auto_psv)) _OC3Interrupt(void);
 
 
 
+//MAIN FUNCTION
 int main(void) {
     
     setupSteppers();
+    stop();
     setupADC();
     setupPhotodiode();
     setupQRDs();
@@ -68,27 +73,20 @@ int main(void) {
     setupDebugLED();
     turnOnADC();
     setupLaser();
-    stop();
   
     //SET UP PARAMETERS FOR STATE MACHINES
     lineFollowingState = STRAIGHT;
-    lineFollowingState2 = ADJUST;
     driveStraight();
     taskDetectionState = TASKDETECTIONDEFAULT;
     canyonState = GOSTRAIGHT;
     sampleState = WAIT;
+    startState = FORWARD;
+    
+    
+    goForward(LANDERDISTANCE, 1);
 
-    OC1RS = SERVOPERIOD;
-    OC1R = 25;
-    closeGate();
-    
-    
-    goForward(300, 1);
-    
     while(1){
-        if(OC2Steps >= stepsToTake){
-            stop();
-        }
+        startFSM();
     }
     return 0;
 }
@@ -579,6 +577,29 @@ void lineFollowingFSM3(){
                 
                 
         }
+}
+void startFSM(){
+    switch(startState){
+        
+        case FORWARD:
+            
+            if(OC2Steps >= stepsToTake){
+                tankTurn(90, CCW);
+                startState = TURN;
+            }
+            
+            break;
+            
+        case TURN:
+            
+            if(OC2Steps >= stepsToTake){
+                //EXIT THIS FSM AND MOVE ONTO THE NEXT STATE IN ROVE
+                stop();
+            }
+            
+            break;
+        
+    }  
 }
 
 
