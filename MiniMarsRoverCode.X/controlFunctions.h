@@ -5,7 +5,7 @@
 #define FAST 3000
 #define SORTAFAST 7000
 #define SLOW 28000
-#define OPENSERVO 30
+#define OPENSERVO 30 //TODO: Change for new oscillator
 #define CLOSESERVO 10
 #define SERVOPERIOD 387
 #define FILTERWEIGHT 0.1
@@ -161,6 +161,7 @@ void adjRL(){
     _LATA1 = 0; //LEFT
     
 }
+
 void driveStraight2(){
     
     //SET PERIOD AND DUTY CYCLE

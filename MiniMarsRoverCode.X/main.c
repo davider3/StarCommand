@@ -16,7 +16,8 @@
 #define CCW 1
 #define ONEREV 200
 #define ONESEC 1938 //TODO: Change for new Timer
-#define TANKTURNSPEED 100
+#define TANKTURNSPEED 3000
+#define FORWARDSPEED 3000
 #define FRONTSENSOR !_RB8
 #define LIMIT 300
 
@@ -24,7 +25,8 @@
 int OC1Steps = 0;
 int OC2Steps = 0;
 int OC3Steps = 0;
-float turnCoeff = 1.7666; //TRACKWIDTH/(1.8 * WHEELDIAMETER)
+float turnCoeff = 3.8; //TRACKWIDTH/(.9 * WHEELDIAMETER)
+float forwardCoeff = 2.15; //400 / (PI * WHEELDIAMETER))
 int stepsToTake = 0;
 int lineCount = 0;
 int prevState = 0;
@@ -46,6 +48,7 @@ void canyonNavigationFSM();
 void sampleReturnFSM();
 //CONTROL FUNCTIONS
 void tankTurn(int degrees, int dir);
+void goForward(int mmDis, int dir);
 //INTERRUPTS
 void __attribute__((interrupt, no_auto_psv)) _OC1Interrupt(void);
 void __attribute__((interrupt, no_auto_psv)) _OC2Interrupt(void);
@@ -79,14 +82,13 @@ int main(void) {
     OC1R = 25;
     closeGate();
     
-    while(1){    
-//        if(photodiode() < 500){
-//            turnOffLaser(); 
-//            IRSearch();
-//        }else{
-//            turnOnLaser();
-//        }
-        lineFollowingFSM();
+    
+    goForward(300, 1);
+    
+    while(1){
+        if(OC2Steps >= stepsToTake){
+            stop();
+        }
     }
     return 0;
 }
@@ -599,5 +601,27 @@ void tankTurn(int degrees, int dir){
     //WRITE TO DIRECTION PINS
     _LATA0 = dir;
     _LATA1 = dir;
+}
+void goForward(int mmDis, int dir){
+    
+    stepsToTake = forwardCoeff * mmDis;
+    
+    OC2Steps = 0;
+    
+    //SET PERIOD AND DUTY CYCLE
+    OC2RS = FORWARDSPEED;
+    OC2R = FORWARDSPEED/2;
+    OC3RS = FORWARDSPEED;
+    OC3R = FORWARDSPEED/2;
+    
+    //WRITE TO DIRECTION PINS
+    //1 IS FORWARD, 0 IS REVERSE
+    if(dir){
+        _LATA0 = 1;
+        _LATA1 = 0;
+    }else{
+        _LATA0 = 0;
+        _LATA1 = 1;
+    }
 }
 
