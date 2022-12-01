@@ -40,6 +40,7 @@ enum {WAIT, WHITEBALL, BLACKBALL} sampleState;
 //FINITE STATE MACHINES
 void lineFollowingFSM();
 void lineFollowingFSM2();
+void lineFollowingFSM3();
 void taskDetectionFSM();
 void canyonNavigationFSM();
 void sampleReturnFSM();
@@ -85,7 +86,7 @@ int main(void) {
 //        }else{
 //            turnOnLaser();
 //        }
-        lineFollowingFSM2();
+        lineFollowingFSM3();
     }
     return 0;
 }
@@ -377,8 +378,8 @@ void lineFollowingFSM2(){
             
             case ADJUST: //ADJUSTMENT State
                 adjRL();
-                if(!midQRD()) //IF CENTER QRD IS WHITE
-                /*{
+                /*if(!midQRD()) //IF CENTER QRD IS WHITE
+                {
                     if(rightQRD()) //IF RIGHT QRD IS BLACK
                     {
                         hardRight();
@@ -414,6 +415,167 @@ void lineFollowingFSM2(){
                 break;
                 
             
+        }
+}
+void lineFollowingFSM3(){
+    //LINE FOLLOWING FSM
+        switch(lineFollowingState){
+            
+            case STRAIGHT:
+                driveStraight2();
+                if(rightQRD()){ //RIGHTQRD IS BLACK
+                    if(midQRD()){
+                        slightRight2();
+                        lineFollowingState = SLIGHTRIGHT;
+                    }else{
+                        hardRight2();
+                        lineFollowingState = HARDRIGHT;
+                    }
+                }else if(leftQRD()){ //LEFTQRD is BLACK
+                    if(midQRD()){
+                        slightLeft2();
+                        lineFollowingState = SLIGHTLEFT;
+                    }else{
+                        hardLeft2();
+                        lineFollowingState = HARDLEFT;
+                    }
+                }
+                break;
+                
+                
+            case SLIGHTRIGHT:
+                prevState = 1;
+                slightRight2();
+                if(rightQRD()){ //RIGHTQRD IS BLACK
+                    if(!midQRD()){
+                        hardRight2();
+                        lineFollowingState = HARDRIGHT;
+                    }
+                }else if(leftQRD()){ //LEFTQRD is BLACK
+                    if(midQRD()){
+                        slightLeft2();
+                        lineFollowingState = SLIGHTLEFT;
+                    }else{
+                        hardLeft2();
+                        lineFollowingState = HARDLEFT;
+                    }
+                }else if(midQRD()){ //IF MIDDLE IS BLACK
+                    driveStraight2();
+                    lineFollowingState = STRAIGHT;
+                }
+                else{
+                    lineFollowingState = SEARCH;
+                    search(prevState);
+                }
+                break;
+                
+                
+            case SLIGHTLEFT:
+                prevState = 0;
+                slightLeft2();
+                if(rightQRD()){ //RIGHTQRD IS BLACK
+                    if(midQRD()){
+                        slightRight2();
+                        lineFollowingState = SLIGHTRIGHT;
+                    }else{
+                        hardRight2();
+                        lineFollowingState = HARDRIGHT;
+                    }
+                }else if(leftQRD()){ //LEFTQRD is BLACK
+                    if(!midQRD()){
+                        hardLeft2();
+                        lineFollowingState = HARDLEFT;
+                    }
+                }else if(midQRD()){ //IF MIDDLE IS BLACK
+                    driveStraight2();
+                    lineFollowingState = STRAIGHT;
+                }
+                else{
+                    lineFollowingState = SEARCH;
+                    search(prevState);
+                }
+                break;
+                
+                
+            case HARDRIGHT:
+                prevState = 1;
+                hardRight2();
+                if(rightQRD()){ //RIGHTQRD IS BLACK
+                    if(midQRD()){
+                        slightRight2();
+                        lineFollowingState = SLIGHTRIGHT;
+                    }
+                }else if(leftQRD()){ //LEFTQRD IS BLACK
+                    if(midQRD()){
+                        slightLeft2();
+                        lineFollowingState = SLIGHTLEFT;
+                    }else{
+                        hardLeft2();
+                        lineFollowingState = HARDLEFT;
+                    }
+                }else if(midQRD()){ //IF MIDDLE IS BLACK
+                    driveStraight2();
+                    lineFollowingState = STRAIGHT;
+                }
+                else{
+                    lineFollowingState = SEARCH;
+                    search(prevState);
+                }
+                break;
+                
+                
+            case HARDLEFT:
+                prevState = 0;
+                hardLeft2();
+                if(rightQRD()){ //RIGHTQRD IS BLACK
+                    if(midQRD()){
+                        slightRight2();
+                        lineFollowingState = SLIGHTRIGHT;
+                    }else{
+                        hardRight2();
+                        lineFollowingState = HARDRIGHT;
+                    }
+                }else if(leftQRD()){ //LEFTQRD IS BLACK
+                    if(midQRD()){
+                        slightLeft2();
+                        lineFollowingState = SLIGHTLEFT;
+                    }
+                }else if(midQRD()){ //IF MIDDLE IS BLACK
+                    driveStraight2();
+                    lineFollowingState = STRAIGHT;
+                }
+                else{
+                    lineFollowingState = SEARCH;
+                    search(prevState);
+                }
+                break;
+                
+            case SEARCH:
+                if(rightQRD()){ //RIGHTQRD IS BLACK
+                    if(midQRD()){
+                        slightRight2();
+                        lineFollowingState = SLIGHTRIGHT;
+                    }else{
+                        hardRight2();
+                        lineFollowingState = HARDRIGHT;
+                    }
+                }else if(leftQRD()){ //LEFTQRD IS BLACK
+                    if(midQRD()){
+                        slightLeft2();
+                        lineFollowingState = SLIGHTLEFT;
+                    }else{
+                        hardLeft2();
+                        lineFollowingState = HARDLEFT;
+                    }
+                }else if(midQRD()){ //IF MIDDLE IS BLACK
+                    driveStraight2();
+                    lineFollowingState = STRAIGHT;
+                }
+            
+            
+                break;
+                
+                
         }
 }
 

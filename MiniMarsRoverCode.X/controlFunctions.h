@@ -2,12 +2,13 @@
 #define	CONTROL_FUNCTIONS_H
 
 #include <xc.h> 
-#define FAST 8000
-#define SORTAFAST 20000
-#define SLOW 70000
+#define FAST 1000
+#define SORTAFAST 1050
+#define SLOW 6000
 #define OPENSERVO 30
 #define CLOSESERVO 10
 #define SERVOPERIOD 387
+#define FILTERWEIGHT 0.1
 
 void driveStraight(){
     
@@ -144,14 +145,14 @@ void adjRL(){
     //DECLARE LOCAL VARIBLES
     int TAdjRight;
     int TAdjLeft;
-
+    int adjFAST = FAST*0.7;
     //RIGHT
-    TAdjRight = FAST + (SLOW - FAST)/4096*ADC1BUF4;
+    TAdjRight = adjFAST + (SLOW - adjFAST)/4096*ADC1BUF4;
     OC2RS = TAdjRight;
     OC2R = TAdjRight/2;
     
     //LEFT
-    TAdjLeft = FAST + (SLOW - FAST)/4096*ADC1BUF14;
+    TAdjLeft = adjFAST + (SLOW - adjFAST)/4096*ADC1BUF14;
     OC3RS = TAdjLeft;
     OC3R = TAdjLeft/2;
     
@@ -160,7 +161,80 @@ void adjRL(){
     _LATA1 = 0; //LEFT
     
 }
+void driveStraight2(){
+    
+    //SET PERIOD AND DUTY CYCLE
+    OC2RS = (1-FILTERWEIGHT)*OC2RS + FILTERWEIGHT*FAST;
+    OC2R = OC2RS/2;
+    OC3RS = (1-FILTERWEIGHT)*OC3RS + FILTERWEIGHT*FAST;
+    OC3R = OC3RS/2;
+    
+    //WRITE TO DIRECTION PINS
+    _LATA0 = 1;
+    _LATA1 = 0;
+    
+}
 
+void slightRight2(){
+    
+    //SET PERIOD AND DUTY CYCLE
+    //RIGHT
+    OC2RS = (1-FILTERWEIGHT)*OC2RS + FILTERWEIGHT*SORTAFAST;
+    OC2R = OC2RS/2;
+    //LEFT
+    OC3RS = (1-FILTERWEIGHT)*OC3RS + FILTERWEIGHT*FAST;
+    OC3R = OC3RS/2;
+    
+    //WRITE TO DIRECTION PINS
+    _LATA0 = 1; //RIGHT
+    _LATA1 = 0; //LEFT
+    
+}
+
+void slightLeft2(){
+    
+    //SET PERIOD AND DUTY CYCLE
+    //RIGHT
+    OC2RS = (1-FILTERWEIGHT)*OC2RS + FILTERWEIGHT*FAST;
+    OC2R = OC2RS/2;
+    //LEFT
+    OC3RS = (1-FILTERWEIGHT)*OC3RS + FILTERWEIGHT*SORTAFAST;
+    OC3R = OC3RS/2;
+    
+    //WRITE TO DIRECTION PINS
+    _LATA0 = 1; //RIGHT
+    _LATA1 = 0; //LEFT
+}
+
+void hardRight2(){
+    
+    //SET PERIOD AND DUTY CYCLE
+    //RIGHT
+    OC2RS = (1-FILTERWEIGHT)*OC2RS + FILTERWEIGHT*SLOW;
+    OC2R = OC2RS/2;
+    //LEFT
+    OC3RS = (1-FILTERWEIGHT)*OC3RS + FILTERWEIGHT*FAST;
+    OC3R = OC3RS/2;
+    
+    //WRITE TO DIRECTION PINS
+    _LATA0 = 1; //RIGHT
+    _LATA1 = 0; //LEFT
+}
+
+void hardLeft2(){
+    
+    //SET PERIOD AND DUTY CYCLE
+    //RIGHT
+    OC2RS = (1-FILTERWEIGHT)*OC2RS + FILTERWEIGHT*FAST;
+    OC2R = OC2RS/2;
+    //LEFT
+    OC3RS = (1-FILTERWEIGHT)*OC3RS + FILTERWEIGHT*SLOW;
+    OC3R = OC3RS/2;
+    
+    //WRITE TO DIRECTION PINS
+    _LATA0 = 1; //RIGHT
+    _LATA1 = 0; //LEFT
+}
 
 
 
