@@ -15,7 +15,7 @@
 #define CW 0
 #define CCW 1
 #define ONEREV 200
-#define ONESEC 1938 //TODO: Change for new Timer
+#define ONESEC 15625
 #define TANKTURNSPEED 6000
 #define FORWARDSPEED 6000
 #define FRONTSENSOR !_RB8
@@ -26,7 +26,7 @@
 int OC1Steps = 0;
 int OC2Steps = 0;
 int OC3Steps = 0;
-float turnCoeff = 4; //TRACKWIDTH/(.9 * WHEELDIAMETER)
+float turnCoeff = 3.85; //TRACKWIDTH/(.9 * WHEELDIAMETER)
 float forwardCoeff = 2.15; //400 / (PI * WHEELDIAMETER))
 int stepsToTake = 0;
 int lineCount = 0;
@@ -39,6 +39,7 @@ enum {TASKDETECTIONDEFAULT, TASKDETECTIONBLACK, TASKDETECTIONWHITE} taskDetectio
 enum {GOSTRAIGHT, WALLDETECTED} canyonState;
 enum {WAIT, WHITEBALL, BLACKBALL} sampleState;
 enum {FORWARD, TURN} startState;
+enum {ALIGN, RIGHT, APPROACH, CATCH, BACKUP, LEFT} getBallState;
 
 //FUNCTION PROTOTYPES
 //FINITE STATE MACHINES
@@ -49,6 +50,7 @@ void taskDetectionFSM();
 void canyonNavigationFSM();
 void sampleReturnFSM();
 void startFSM();
+void getBallFSM();
 //CONTROL FUNCTIONS
 void tankTurn(int degrees, int dir);
 void goForward(int mmDis, int dir);
@@ -81,13 +83,18 @@ int main(void) {
     canyonState = GOSTRAIGHT;
     sampleState = WAIT;
     startState = FORWARD;
+    getBallState = ALIGN;
     
-    
-    goForward(LANDERDISTANCE, 1);
+    //startFSM
+    //goForward(LANDERDISTANCE, 1);
 
+    //getBallFSM
+    goForward(150, 1);
+    
     while(1){
-        startFSM();
+        getBallFSM();
     }
+    
     return 0;
 }
 
@@ -600,6 +607,61 @@ void startFSM(){
             break;
         
     }  
+}
+void getBallFSM(){
+    
+    switch(getBallState){
+        
+        case ALIGN:
+            
+            if(OC2Steps >= stepsToTake){
+                getBallState = RIGHT;
+                tankTurn(90, CW);
+            }
+            break;
+            
+        case RIGHT:
+            
+            if(OC2Steps >= stepsToTake){
+                getBallState = APPROACH;
+                goForward(260, 1);
+            }
+            break;
+            
+        case APPROACH:
+            
+            if(OC2Steps >= stepsToTake){
+                stop();
+                getBallState = CATCH;
+            }
+            break;
+            
+        case CATCH:
+            
+            if(TMR1 > ONESEC * .1){
+                goForward(260, 0);
+                getBallState = BACKUP;
+            }
+            break;
+            
+        case BACKUP:
+            
+            if(OC2Steps >= stepsToTake){
+                tankTurn(90, CCW);
+                getBallState = LEFT;
+            }
+            break;
+            
+        case LEFT:
+            
+            if(OC2Steps >= stepsToTake){
+                //EXIT BACK OUT TO ROVE FSM
+                stop();
+            }
+            
+            break;
+                 
+    }
 }
 
 
