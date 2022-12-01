@@ -2,9 +2,9 @@
 #define	CONTROL_FUNCTIONS_H
 
 #include <xc.h> 
-#define FAST 90
-#define SORTAFAST 120
-#define SLOW 220
+#define FAST 8000
+#define SORTAFAST 20000
+#define SLOW 70000
 #define OPENSERVO 30
 #define CLOSESERVO 10
 #define SERVOPERIOD 387
@@ -138,5 +138,31 @@ void IRSearch(){
         OC1R = 25;
     }
 }
+
+void adjRL(){
+    
+    //DECLARE LOCAL VARIBLES
+    int TAdjRight;
+    int TAdjLeft;
+
+    //RIGHT
+    TAdjRight = FAST + (SLOW - FAST)/4096*ADC1BUF4;
+    OC2RS = TAdjRight;
+    OC2R = TAdjRight/2;
+    
+    //LEFT
+    TAdjLeft = FAST + (SLOW - FAST)/4096*ADC1BUF14;
+    OC3RS = TAdjLeft;
+    OC3R = TAdjLeft/2;
+    
+    //WRITE TO DIRECTION PINS
+    _LATA0 = 1; //RIGHT
+    _LATA1 = 0; //LEFT
+    
+}
+
+
+
+
 #endif	/* CONTROL_FUNCTIONS_H */
 

@@ -10,12 +10,12 @@
 #include "setup.h"
 #include "checkState.h"
 #include "controlFunctions.h"
-#pragma config FNOSC = LPRC //31 kHz oscillator
+#pragma config FNOSC = FRC //8 MHz oscillator
 
 #define CW 0
 #define CCW 1
 #define ONEREV 200
-#define ONESEC 1938
+#define ONESEC 1938 //TODO: Change for new Timer
 #define TANKTURNSPEED 100
 #define FRONTSENSOR !_RB8
 #define LIMIT 300
@@ -31,6 +31,7 @@ int prevState = 0;
 
 //FSM VARIABLES
 enum {STRAIGHT, SLIGHTRIGHT, SLIGHTLEFT, HARDRIGHT, HARDLEFT, SEARCH} lineFollowingState;
+enum {ADJUST, GORIGHT, GOLEFT} lineFollowingState2;
 enum {TASKDETECTIONDEFAULT, TASKDETECTIONBLACK, TASKDETECTIONWHITE} taskDetectionState;
 enum {GOSTRAIGHT, WALLDETECTED} canyonState;
 enum {WAIT, WHITEBALL, BLACKBALL} sampleState;
@@ -38,6 +39,7 @@ enum {WAIT, WHITEBALL, BLACKBALL} sampleState;
 //FUNCTION PROTOTYPES
 //FINITE STATE MACHINES
 void lineFollowingFSM();
+void lineFollowingFSM2();
 void taskDetectionFSM();
 void canyonNavigationFSM();
 void sampleReturnFSM();
@@ -66,6 +68,7 @@ int main(void) {
   
     //SET UP PARAMETERS FOR STATE MACHINES
     lineFollowingState = STRAIGHT;
+    lineFollowingState2 = ADJUST;
     //driveStraight();
     taskDetectionState = TASKDETECTIONDEFAULT;
     canyonState = GOSTRAIGHT;
@@ -73,14 +76,16 @@ int main(void) {
 
     OC1RS = SERVOPERIOD;
     OC1R = 25;
+    closeGate();
     
     while(1){    
-        if(photodiode() < 500){
-            turnOffLaser(); 
-            IRSearch();
-        }else{
-            turnOnLaser();
-        }
+//        if(photodiode() < 500){
+//            turnOffLaser(); 
+//            IRSearch();
+//        }else{
+//            turnOnLaser();
+//        }
+        lineFollowingFSM2();
     }
     return 0;
 }
@@ -366,6 +371,52 @@ void sampleReturnFSM(){
             break;
     }
 }
+void lineFollowingFSM2(){
+    //LINE FOLLOWING FSM
+        switch(lineFollowingState2){
+            
+            case ADJUST: //ADJUSTMENT State
+                adjRL();
+                if(!midQRD()) //IF CENTER QRD IS WHITE
+                /*{
+                    if(rightQRD()) //IF RIGHT QRD IS BLACK
+                    {
+                        hardRight();
+                        lineFollowingState2 = GORIGHT;
+                    }
+                    else if(leftQRD()){  //IF LEFT QRD IS BLACK
+                        hardLeft();
+                        lineFollowingState2 = GOLEFT;
+                    }
+                }*/
+                break;
+                
+            case GORIGHT:
+                hardRight();
+                if(midQRD()){ //IF MIDDLE IS BLACK
+                    adjRL();
+                    lineFollowingState2 = ADJUST;
+                }
+            
+                
+                break;
+                
+                
+            case GOLEFT:
+                prevState = 0;
+                hardLeft();
+                if(midQRD()){ //IF MIDDLE IS BLACK
+                    adjRL();
+                    lineFollowingState2 = ADJUST;
+                }
+                
+              
+                break;
+                
+            
+        }
+}
+
 
 //CONTROL FUNCTION DEFINITIONS
 void tankTurn(int degrees, int dir){

@@ -37,6 +37,7 @@ void setupSteppers(){
     
 }
 
+//TODO: Change timer setup for the 8 MHz Oscillator
 void setupTimer(){
     _TON = 1;       // Turn Timer1 on
     _TCKPS = 0b01;  // Chose pre-scaling as 8

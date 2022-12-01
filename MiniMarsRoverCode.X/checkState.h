@@ -2,7 +2,7 @@
 #define	CHECK_STATE_H
 
 #include <xc.h> 
-#define THRESHOLD 1500
+#define THRESHOLD 2000
 
 int rightQRD(){
     int onOffr;
