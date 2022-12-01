@@ -85,8 +85,9 @@ int main(void) {
 //        }else{
 //            turnOnLaser();
 //        }
-        lineFollowingFSM2();
+        lineFollowingFSM();
     }
+    
     return 0;
 }
 
