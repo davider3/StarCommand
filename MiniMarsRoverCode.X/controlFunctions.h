@@ -2,9 +2,9 @@
 #define	CONTROL_FUNCTIONS_H
 
 #include <xc.h> 
-#define FAST 1000
-#define SORTAFAST 1050
-#define SLOW 6000
+#define FAST 3000
+#define SORTAFAST 7000
+#define SLOW 28000
 #define OPENSERVO 30
 #define CLOSESERVO 10
 #define SERVOPERIOD 387
