@@ -69,7 +69,7 @@ int main(void) {
     //SET UP PARAMETERS FOR STATE MACHINES
     lineFollowingState = STRAIGHT;
     lineFollowingState2 = ADJUST;
-    //driveStraight();
+    driveStraight();
     taskDetectionState = TASKDETECTIONDEFAULT;
     canyonState = GOSTRAIGHT;
     sampleState = WAIT;
@@ -85,7 +85,7 @@ int main(void) {
 //        }else{
 //            turnOnLaser();
 //        }
-        lineFollowingFSM2();
+        lineFollowingFSM();
     }
     return 0;
 }
