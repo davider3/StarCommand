@@ -59,7 +59,7 @@ void setupADC(){
     _NVCFG = 0;   // use VSS as negative reference
     _BUFREGEN = 1;// store results in buffer corresponding to channel number
     _CSCNA = 1;   // scanning mode
-    _SMPI = 5;    // NUMBER OF ANALOG PINS MINUS ONE
+    _SMPI = 6;    // NUMBER OF ANALOG PINS MINUS ONE
     _ALTS = 0;    // sample MUXA only
 
     // AD1CON3
@@ -96,6 +96,10 @@ void setupQRDs(){
     _ANSB13 = 1;
     _CSS11 = 1;
         
+    //LANDERDETECTION
+    _TRISB14 = 1;
+    _ANSB14 = 1;
+    _CSS10 = 1;
 }
 
 void turnOnADC(){

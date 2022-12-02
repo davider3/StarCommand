@@ -3,8 +3,8 @@
 
 #include <xc.h> 
 #define FAST 3000
-#define SORTAFAST 7000
-#define SLOW 28000
+#define SORTAFAST 4000
+#define SLOW 20000
 #define OPENSERVO 30 //TODO: Change for new oscillator
 #define CLOSESERVO 10
 #define SERVOPERIOD 387

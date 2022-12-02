@@ -26,13 +26,16 @@
 int OC1Steps = 0;
 int OC2Steps = 0;
 int OC3Steps = 0;
-float turnCoeff = 3.85; //TRACKWIDTH/(.9 * WHEELDIAMETER)
+float turnCoeff = 3.65; //TRACKWIDTH/(.9 * WHEELDIAMETER)
 float forwardCoeff = 2.15; //400 / (PI * WHEELDIAMETER))
 int stepsToTake = 0;
 int lineCount = 0;
+int nextTask = 2;
 int prevState = 0;
+int finished = 0; //0 NOT DONE, 1 DONE
 
 //FSM VARIABLES
+enum{START, LINEFOLLOW, GETBALL} roveState;
 enum {STRAIGHT, SLIGHTRIGHT, SLIGHTLEFT, HARDRIGHT, HARDLEFT, SEARCH} lineFollowingState;
 enum {ADJUST, GORIGHT, GOLEFT} lineFollowingState2;
 enum {TASKDETECTIONDEFAULT, TASKDETECTIONBLACK, TASKDETECTIONWHITE} taskDetectionState;
@@ -43,6 +46,7 @@ enum {ALIGN, RIGHT, APPROACH, CATCH, BACKUP, LEFT} getBallState;
 
 //FUNCTION PROTOTYPES
 //FINITE STATE MACHINES
+void roveFSM();
 void lineFollowingFSM();
 void lineFollowingFSM2();
 void lineFollowingFSM3();
@@ -77,6 +81,7 @@ int main(void) {
     setupLaser();
   
     //SET UP PARAMETERS FOR STATE MACHINES
+    roveState = START;
     lineFollowingState = STRAIGHT;
     driveStraight();
     taskDetectionState = TASKDETECTIONDEFAULT;
@@ -87,12 +92,11 @@ int main(void) {
     
     //startFSM
     //goForward(LANDERDISTANCE, 1);
-
-    //getBallFSM
-    goForward(150, 1);
+    
     
     while(1){
-        getBallFSM();
+        //roveFSM();
+        lineFollowingFSM();
     }
     
     return 0;
@@ -118,6 +122,45 @@ void __attribute__((interrupt, no_auto_psv)) _OC3Interrupt(void){
 }
 
 //FSM FUNCTION DEFINITIONS
+void roveFSM(){
+    
+    switch(roveState){
+        case START:
+            startFSM();
+            if(finished){
+                finished = 0;
+                roveState = LINEFOLLOW;
+            }
+            break;
+            
+        case LINEFOLLOW:
+            lineFollowingFSM();
+            taskDetectionFSM();
+            if(finished){
+                finished = 0;
+                if(nextTask == 2){
+                    ++nextTask;
+                    debugLED(1);
+                    goForward(230, 1);
+                    roveState = GETBALL;
+                }else if(nextTask == 3){
+                    ++nextTask;
+                    //RETURN BALL
+                }else if(nextTask == 4){
+                    //CANYON
+                }
+            }
+            break;
+            
+        case GETBALL:
+            getBallFSM();
+            if(finished){
+                finished = 0;
+                roveState = LINEFOLLOW;
+            }
+            break;
+    }
+}
 void lineFollowingFSM(){
     //LINE FOLLOWING FSM
         switch(lineFollowingState){
@@ -303,9 +346,8 @@ void taskDetectionFSM(){
                     taskDetectionState = TASKDETECTIONDEFAULT;
                     _OC2IE = 0;
                 }
-                else if(lineCount == 3){
-                    OC2R = 0;
-                    OC3R = 0;
+                else if(lineCount == nextTask){
+                    finished = 1;
                 }
                 else if(taskdetectionQRD()){ //IF TASK DETECTION IS BLACK
                     taskDetectionState = TASKDETECTIONBLACK;
@@ -600,8 +642,7 @@ void startFSM(){
         case TURN:
             
             if(OC2Steps >= stepsToTake){
-                //EXIT THIS FSM AND MOVE ONTO THE NEXT STATE IN ROVE
-                stop();
+                finished = 1;
             }
             
             break;
@@ -613,7 +654,7 @@ void getBallFSM(){
     switch(getBallState){
         
         case ALIGN:
-            
+            debugLED(0);
             if(OC2Steps >= stepsToTake){
                 getBallState = RIGHT;
                 tankTurn(90, CW);
@@ -633,12 +674,13 @@ void getBallFSM(){
             if(OC2Steps >= stepsToTake){
                 stop();
                 getBallState = CATCH;
+                TMR1 = 0;
             }
             break;
             
         case CATCH:
             
-            if(TMR1 > ONESEC * .1){
+            if(TMR1 > ONESEC ){
                 goForward(260, 0);
                 getBallState = BACKUP;
             }
@@ -655,8 +697,7 @@ void getBallFSM(){
         case LEFT:
             
             if(OC2Steps >= stepsToTake){
-                //EXIT BACK OUT TO ROVE FSM
-                stop();
+                finished = 1;
             }
             
             break;
@@ -700,10 +741,10 @@ void goForward(int mmDis, int dir){
     //WRITE TO DIRECTION PINS
     //1 IS FORWARD, 0 IS REVERSE
     if(dir){
-        _LATA0 = 1;
+        _LATA0 = 1; //GOING FORWARD
         _LATA1 = 0;
     }else{
-        _LATA0 = 0;
+        _LATA0 = 0; //GOING REVERSE
         _LATA1 = 1;
     }
 }
