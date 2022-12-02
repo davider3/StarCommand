@@ -15,36 +15,49 @@
 #define CW 0
 #define CCW 1
 #define ONEREV 200
-#define ONESEC 1938 //TODO: Change for new Timer
-#define TANKTURNSPEED 100
+#define ONESEC 15625
+#define TANKTURNSPEED 6000
+#define FORWARDSPEED 6000
 #define FRONTSENSOR !_RB8
 #define LIMIT 300
+#define LANDERDISTANCE 630 //mm
 
 //GLOBAL VARIABLES
 int OC1Steps = 0;
 int OC2Steps = 0;
 int OC3Steps = 0;
-float turnCoeff = 1.7666; //TRACKWIDTH/(1.8 * WHEELDIAMETER)
+float turnCoeff = 3.65; //TRACKWIDTH/(.9 * WHEELDIAMETER)
+float forwardCoeff = 2.15; //400 / (PI * WHEELDIAMETER))
 int stepsToTake = 0;
 int lineCount = 0;
+int nextTask = 2;
 int prevState = 0;
+int finished = 0; //0 NOT DONE, 1 DONE
 
 //FSM VARIABLES
+enum{START, LINEFOLLOW, GETBALL} roveState;
 enum {STRAIGHT, SLIGHTRIGHT, SLIGHTLEFT, HARDRIGHT, HARDLEFT, SEARCH} lineFollowingState;
 enum {ADJUST, GORIGHT, GOLEFT} lineFollowingState2;
 enum {TASKDETECTIONDEFAULT, TASKDETECTIONBLACK, TASKDETECTIONWHITE} taskDetectionState;
 enum {GOSTRAIGHT, WALLDETECTED} canyonState;
 enum {WAIT, WHITEBALL, BLACKBALL} sampleState;
+enum {FORWARD, TURN} startState;
+enum {ALIGN, RIGHT, APPROACH, CATCH, BACKUP, LEFT} getBallState;
 
 //FUNCTION PROTOTYPES
 //FINITE STATE MACHINES
+void roveFSM();
 void lineFollowingFSM();
 void lineFollowingFSM2();
+void lineFollowingFSM3();
 void taskDetectionFSM();
 void canyonNavigationFSM();
 void sampleReturnFSM();
+void startFSM();
+void getBallFSM();
 //CONTROL FUNCTIONS
 void tankTurn(int degrees, int dir);
+void goForward(int mmDis, int dir);
 //INTERRUPTS
 void __attribute__((interrupt, no_auto_psv)) _OC1Interrupt(void);
 void __attribute__((interrupt, no_auto_psv)) _OC2Interrupt(void);
@@ -52,9 +65,11 @@ void __attribute__((interrupt, no_auto_psv)) _OC3Interrupt(void);
 
 
 
+//MAIN FUNCTION
 int main(void) {
     
     setupSteppers();
+    stop();
     setupADC();
     setupPhotodiode();
     setupQRDs();
@@ -64,27 +79,23 @@ int main(void) {
     setupDebugLED();
     turnOnADC();
     setupLaser();
-    stop();
   
     //SET UP PARAMETERS FOR STATE MACHINES
+    roveState = START;
     lineFollowingState = STRAIGHT;
-    lineFollowingState2 = ADJUST;
     driveStraight();
     taskDetectionState = TASKDETECTIONDEFAULT;
     canyonState = GOSTRAIGHT;
     sampleState = WAIT;
-
-    OC1RS = SERVOPERIOD;
-    OC1R = 25;
-    closeGate();
+    startState = FORWARD;
+    getBallState = ALIGN;
     
-    while(1){    
-//        if(photodiode() < 500){
-//            turnOffLaser(); 
-//            IRSearch();
-//        }else{
-//            turnOnLaser();
-//        }
+    //startFSM
+    //goForward(LANDERDISTANCE, 1);
+    
+    
+    while(1){
+        //roveFSM();
         lineFollowingFSM();
     }
     
@@ -111,6 +122,45 @@ void __attribute__((interrupt, no_auto_psv)) _OC3Interrupt(void){
 }
 
 //FSM FUNCTION DEFINITIONS
+void roveFSM(){
+    
+    switch(roveState){
+        case START:
+            startFSM();
+            if(finished){
+                finished = 0;
+                roveState = LINEFOLLOW;
+            }
+            break;
+            
+        case LINEFOLLOW:
+            lineFollowingFSM();
+            taskDetectionFSM();
+            if(finished){
+                finished = 0;
+                if(nextTask == 2){
+                    ++nextTask;
+                    debugLED(1);
+                    goForward(230, 1);
+                    roveState = GETBALL;
+                }else if(nextTask == 3){
+                    ++nextTask;
+                    //RETURN BALL
+                }else if(nextTask == 4){
+                    //CANYON
+                }
+            }
+            break;
+            
+        case GETBALL:
+            getBallFSM();
+            if(finished){
+                finished = 0;
+                roveState = LINEFOLLOW;
+            }
+            break;
+    }
+}
 void lineFollowingFSM(){
     //LINE FOLLOWING FSM
         switch(lineFollowingState){
@@ -296,9 +346,8 @@ void taskDetectionFSM(){
                     taskDetectionState = TASKDETECTIONDEFAULT;
                     _OC2IE = 0;
                 }
-                else if(lineCount == 3){
-                    OC2R = 0;
-                    OC3R = 0;
+                else if(lineCount == nextTask){
+                    finished = 1;
                 }
                 else if(taskdetectionQRD()){ //IF TASK DETECTION IS BLACK
                     taskDetectionState = TASKDETECTIONBLACK;
@@ -378,8 +427,8 @@ void lineFollowingFSM2(){
             
             case ADJUST: //ADJUSTMENT State
                 adjRL();
-                if(!midQRD()) //IF CENTER QRD IS WHITE
-                /*{
+                /*if(!midQRD()) //IF CENTER QRD IS WHITE
+                {
                     if(rightQRD()) //IF RIGHT QRD IS BLACK
                     {
                         hardRight();
@@ -417,6 +466,244 @@ void lineFollowingFSM2(){
             
         }
 }
+void lineFollowingFSM3(){
+    //LINE FOLLOWING FSM
+        switch(lineFollowingState){
+            
+            case STRAIGHT:
+                driveStraight2();
+                if(rightQRD()){ //RIGHTQRD IS BLACK
+                    if(midQRD()){
+                        slightRight2();
+                        lineFollowingState = SLIGHTRIGHT;
+                    }else{
+                        hardRight2();
+                        lineFollowingState = HARDRIGHT;
+                    }
+                }else if(leftQRD()){ //LEFTQRD is BLACK
+                    if(midQRD()){
+                        slightLeft2();
+                        lineFollowingState = SLIGHTLEFT;
+                    }else{
+                        hardLeft2();
+                        lineFollowingState = HARDLEFT;
+                    }
+                }
+                break;
+                
+                
+            case SLIGHTRIGHT:
+                prevState = 1;
+                slightRight2();
+                if(rightQRD()){ //RIGHTQRD IS BLACK
+                    if(!midQRD()){
+                        hardRight2();
+                        lineFollowingState = HARDRIGHT;
+                    }
+                }else if(leftQRD()){ //LEFTQRD is BLACK
+                    if(midQRD()){
+                        slightLeft2();
+                        lineFollowingState = SLIGHTLEFT;
+                    }else{
+                        hardLeft2();
+                        lineFollowingState = HARDLEFT;
+                    }
+                }else if(midQRD()){ //IF MIDDLE IS BLACK
+                    driveStraight2();
+                    lineFollowingState = STRAIGHT;
+                }
+                else{
+                    lineFollowingState = SEARCH;
+                    search(prevState);
+                }
+                break;
+                
+                
+            case SLIGHTLEFT:
+                prevState = 0;
+                slightLeft2();
+                if(rightQRD()){ //RIGHTQRD IS BLACK
+                    if(midQRD()){
+                        slightRight2();
+                        lineFollowingState = SLIGHTRIGHT;
+                    }else{
+                        hardRight2();
+                        lineFollowingState = HARDRIGHT;
+                    }
+                }else if(leftQRD()){ //LEFTQRD is BLACK
+                    if(!midQRD()){
+                        hardLeft2();
+                        lineFollowingState = HARDLEFT;
+                    }
+                }else if(midQRD()){ //IF MIDDLE IS BLACK
+                    driveStraight2();
+                    lineFollowingState = STRAIGHT;
+                }
+                else{
+                    lineFollowingState = SEARCH;
+                    search(prevState);
+                }
+                break;
+                
+                
+            case HARDRIGHT:
+                prevState = 1;
+                hardRight2();
+                if(rightQRD()){ //RIGHTQRD IS BLACK
+                    if(midQRD()){
+                        slightRight2();
+                        lineFollowingState = SLIGHTRIGHT;
+                    }
+                }else if(leftQRD()){ //LEFTQRD IS BLACK
+                    if(midQRD()){
+                        slightLeft2();
+                        lineFollowingState = SLIGHTLEFT;
+                    }else{
+                        hardLeft2();
+                        lineFollowingState = HARDLEFT;
+                    }
+                }else if(midQRD()){ //IF MIDDLE IS BLACK
+                    driveStraight2();
+                    lineFollowingState = STRAIGHT;
+                }
+                else{
+                    lineFollowingState = SEARCH;
+                    search(prevState);
+                }
+                break;
+                
+                
+            case HARDLEFT:
+                prevState = 0;
+                hardLeft2();
+                if(rightQRD()){ //RIGHTQRD IS BLACK
+                    if(midQRD()){
+                        slightRight2();
+                        lineFollowingState = SLIGHTRIGHT;
+                    }else{
+                        hardRight2();
+                        lineFollowingState = HARDRIGHT;
+                    }
+                }else if(leftQRD()){ //LEFTQRD IS BLACK
+                    if(midQRD()){
+                        slightLeft2();
+                        lineFollowingState = SLIGHTLEFT;
+                    }
+                }else if(midQRD()){ //IF MIDDLE IS BLACK
+                    driveStraight2();
+                    lineFollowingState = STRAIGHT;
+                }
+                else{
+                    lineFollowingState = SEARCH;
+                    search(prevState);
+                }
+                break;
+                
+            case SEARCH:
+                if(rightQRD()){ //RIGHTQRD IS BLACK
+                    if(midQRD()){
+                        slightRight2();
+                        lineFollowingState = SLIGHTRIGHT;
+                    }else{
+                        hardRight2();
+                        lineFollowingState = HARDRIGHT;
+                    }
+                }else if(leftQRD()){ //LEFTQRD IS BLACK
+                    if(midQRD()){
+                        slightLeft2();
+                        lineFollowingState = SLIGHTLEFT;
+                    }else{
+                        hardLeft2();
+                        lineFollowingState = HARDLEFT;
+                    }
+                }else if(midQRD()){ //IF MIDDLE IS BLACK
+                    driveStraight2();
+                    lineFollowingState = STRAIGHT;
+                }
+            
+            
+                break;
+                
+                
+        }
+}
+void startFSM(){
+    switch(startState){
+        
+        case FORWARD:
+            
+            if(OC2Steps >= stepsToTake){
+                tankTurn(90, CCW);
+                startState = TURN;
+            }
+            
+            break;
+            
+        case TURN:
+            
+            if(OC2Steps >= stepsToTake){
+                finished = 1;
+            }
+            
+            break;
+        
+    }  
+}
+void getBallFSM(){
+    
+    switch(getBallState){
+        
+        case ALIGN:
+            debugLED(0);
+            if(OC2Steps >= stepsToTake){
+                getBallState = RIGHT;
+                tankTurn(90, CW);
+            }
+            break;
+            
+        case RIGHT:
+            
+            if(OC2Steps >= stepsToTake){
+                getBallState = APPROACH;
+                goForward(260, 1);
+            }
+            break;
+            
+        case APPROACH:
+            
+            if(OC2Steps >= stepsToTake){
+                stop();
+                getBallState = CATCH;
+                TMR1 = 0;
+            }
+            break;
+            
+        case CATCH:
+            
+            if(TMR1 > ONESEC ){
+                goForward(260, 0);
+                getBallState = BACKUP;
+            }
+            break;
+            
+        case BACKUP:
+            
+            if(OC2Steps >= stepsToTake){
+                tankTurn(90, CCW);
+                getBallState = LEFT;
+            }
+            break;
+            
+        case LEFT:
+            
+            if(OC2Steps >= stepsToTake){
+                finished = 1;
+            }
+            
+            break;
+                 
+    }
+}
 
 
 //CONTROL FUNCTION DEFINITIONS
@@ -438,5 +725,27 @@ void tankTurn(int degrees, int dir){
     //WRITE TO DIRECTION PINS
     _LATA0 = dir;
     _LATA1 = dir;
+}
+void goForward(int mmDis, int dir){
+    
+    stepsToTake = forwardCoeff * mmDis;
+    
+    OC2Steps = 0;
+    
+    //SET PERIOD AND DUTY CYCLE
+    OC2RS = FORWARDSPEED;
+    OC2R = FORWARDSPEED/2;
+    OC3RS = FORWARDSPEED;
+    OC3R = FORWARDSPEED/2;
+    
+    //WRITE TO DIRECTION PINS
+    //1 IS FORWARD, 0 IS REVERSE
+    if(dir){
+        _LATA0 = 1; //GOING FORWARD
+        _LATA1 = 0;
+    }else{
+        _LATA0 = 0; //GOING REVERSE
+        _LATA1 = 1;
+    }
 }
 

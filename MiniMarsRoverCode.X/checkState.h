@@ -59,6 +59,17 @@ int ballQRD(){
     return onOffb; 
 }
 
+int returnToLanderQRD(){
+   int onOffb;
+    if(ADC1BUF10 > THRESHOLD){
+        onOffb = 1;
+    }else{
+        onOffb = 0;
+    }
+    
+    return onOffb; 
+}
+
 int photodiode(){
     return ADC1BUF9;
 }
