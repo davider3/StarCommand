@@ -115,7 +115,7 @@ void setupServo(){
     //PIN 14
     OC1CON1 = 0;
     OC1CON2 = 0;
-    OC1CON1bits.OCTSEL = 0b111;
+    OC1CON1bits.OCTSEL = 0b100;
     OC1CON2bits.SYNCSEL = 0x1F;
     OC1CON2bits.OCTRIG = 0;
     OC1CON1bits.OCM = 0b110;

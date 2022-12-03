@@ -23,6 +23,7 @@
 #define LIMIT 100
 #define LANDERDISTANCE 620 //mm
 #define APPROACHDIS 240 //mm
+#define PASSLINEDIS 220 //mm
 
 //GLOBAL VARIABLES
 int OC1Steps = 0;
@@ -45,6 +46,7 @@ enum {GOSTRAIGHT, WALLDETECTED, EXIT} canyonState;
 enum {GETLINEDUP, SPIN, OPENGATE, SPINBACK} sampleState;
 enum {FORWARD, TURN} startState;
 enum {ALIGN, DELAY, RIGHT, APPROACH, CATCH, BACKUP, LEFT} getBallState;
+enum {TURNING, GOTOPUSH, BACKITUP, TURNBACK} serviceState;
 
 //FUNCTION PROTOTYPES
 //FINITE STATE MACHINES
@@ -57,6 +59,7 @@ void canyonNavigationFSM();
 void sampleReturnFSM();
 void startFSM();
 void getBallFSM();
+void serviceFSM();
 //CONTROL FUNCTIONS
 void tankTurn(int degrees, int dir);
 void goForward(int mmDis, int dir);
@@ -83,24 +86,31 @@ int main(void) {
     setupLaser();
   
     //SET UP PARAMETERS FOR STATE MACHINES
-    roveState = LINEFOLLOW;
+    roveState = START;
     lineFollowingState = STRAIGHT;
-    driveStraight();
     taskDetectionState = TASKDETECTIONDEFAULT;
     canyonState = GOSTRAIGHT;
     sampleState = GETLINEDUP;
     startState = FORWARD;
     getBallState = ALIGN;
     
-   // startFSM
-   // goForward(LANDERDISTANCE, 1);
+    
+    //goForward(LANDERDISTANCE, 1);
     
     
     while(1){
-        lineFollowingFSM();
+        //roveFSM();
+        
 //        if(taskdetectionQRD()){
 //            debugLED(1);
 //        }else debugLED(0);
+        
+        if(TMR1 > 2*ONESEC){
+            openGate();
+            TMR1 = 0;
+        }else if(TMR1 > ONESEC){
+            closeGate();
+        }
     }
     
     return 0;
@@ -138,27 +148,31 @@ void roveFSM(){
             break;
             
         case LINEFOLLOW:
+            debugLED(1);
             lineFollowingFSM();
             taskDetectionFSM();
             if(finished){
                 finished = 0;
                 lineCount = 0;
                 if(nextTask == 2){
+                    debugLED(0);
                     roveState = GETBALL;
                     ++nextTask;
-                    goForward(200, 1);
+                    goForward(PASSLINEDIS, 1);
+                    catchBall();
                 }else if(nextTask == 3){
                     ++nextTask;
-                    
-                    goForward(200, 1);
-                    
-                    //RETURN BALL
+                    goForward(80, 1);
                 }else if(nextTask == 4){
                     
                     driveStraight();
                     
                     //CANYON
                 }
+            }else if(0){ //CHECK THE STATE OF THE IR SENSOR ON THE RIGHT
+                tankTurn(90, CW);
+                
+                //SERVICE
             }
             break;
             
@@ -187,7 +201,11 @@ void roveFSM(){
             break;
             
         case SERVICE:
-            
+            serviceFSM();
+            if(finished){
+                finished = 0;
+                roveState = LINEFOLLOW;
+            }
             break;
             
         case RETURNTOLANDER:
@@ -398,9 +416,16 @@ void taskDetectionFSM(){
 void canyonNavigationFSM(){
     switch(canyonState){
         case GOSTRAIGHT:
+            
             if(FRONTSENSOR){
                 canyonState = WALLDETECTED;
-                OC2Steps = 0;
+                if(LEFTSENSOR){
+                    tankTurn(90, CW);
+                }else{
+                    tankTurn(90, CCW);
+                }
+            }else if(taskdetectionQRD()){
+                canyonState = EXIT;
                 if(LEFTSENSOR){
                     tankTurn(90, CW);
                 }else{
@@ -410,6 +435,7 @@ void canyonNavigationFSM(){
             break;
             
         case WALLDETECTED:
+            
             if(OC2Steps >= stepsToTake){
                 canyonState = GOSTRAIGHT;
                 driveStraight();
@@ -418,6 +444,9 @@ void canyonNavigationFSM(){
             
         case EXIT:
             
+            if(OC2Steps >= stepsToTake){
+                finished = 1;
+            }
             break;
     }
 }
@@ -451,7 +480,7 @@ void sampleReturnFSM(){
             
         case OPENGATE:
             
-            if(TMR1 >= .4*ONESEC){
+            if(TMR1 >= ONESEC){
                 tankTurn(90, ball);
                 sampleState = SPINBACK;
                 closeGate();
@@ -531,6 +560,7 @@ void getBallFSM(){
             if(TMR1 > ONESEC ){
                 goForward(APPROACHDIS, 0);
                 getBallState = BACKUP;
+                closeGate();
             }
             break;
             
@@ -552,7 +582,45 @@ void getBallFSM(){
                  
     }
 }
-
+void serviceFSM(){
+    
+    switch(serviceState){
+            
+        case TURNING:
+            
+            if(OC2Steps >= stepsToTake){
+                serviceState = GOTOPUSH;
+                goForward(APPROACHDIS, 1);
+            }                
+            break;
+                
+        case GOTOPUSH:
+            
+            if(OC2Steps >= stepsToTake){
+                serviceState = BACKITUP;
+                goForward(APPROACHDIS, 0);
+            }
+            break;
+                
+        case BACKITUP:
+            
+            if(OC2Steps >= stepsToTake){
+                serviceState = TURNBACK;
+                tankTurn(90, CCW);
+            }
+            break;
+                
+        case TURNBACK:
+            
+            if(OC2Steps >= stepsToTake){
+                finished = 1;
+            }
+            break;
+                    
+    }
+           
+                    
+}
 
 //CONTROL FUNCTION DEFINITIONS
 void tankTurn(int degrees, int dir){

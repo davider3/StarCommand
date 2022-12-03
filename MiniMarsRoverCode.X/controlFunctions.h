@@ -7,7 +7,8 @@
 #define SLOW 20000
 #define OPENSERVO 30 //TODO: Change for new oscillator
 #define CLOSESERVO 10
-#define SERVOPERIOD 387
+#define CATCHSERVO 18
+#define SERVOPERIOD 390
 #define FILTERWEIGHT 0.1
 
 void driveStraight(){
@@ -117,6 +118,16 @@ void openGate(){
 void closeGate(){
     OC1RS = SERVOPERIOD;
     OC1R = CLOSESERVO;
+}
+
+void catchBall(){
+    OC1RS = SERVOPERIOD;
+    OC1R = CATCHSERVO;
+}
+
+void stopServo(){
+    OC1RS = 0;
+    OC1R = 0;
 }
 
 void turnOnLaser(){

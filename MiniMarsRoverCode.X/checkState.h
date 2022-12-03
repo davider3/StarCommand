@@ -51,7 +51,7 @@ int taskdetectionQRD(){
 
 int ballQRD(){
    int onOffb;
-    if(ADC1BUF11 > THRESHOLD){
+    if(ADC1BUF11 > 2500){
         onOffb = 1;
     }else{
         onOffb = 0;
