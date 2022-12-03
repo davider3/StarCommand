@@ -3,6 +3,7 @@
 
 #include <xc.h> 
 #define THRESHOLD 2000
+#define TASKDETECT 2000
 
 int rightQRD(){
     int onOffr;
@@ -39,7 +40,7 @@ int leftQRD(){
 
 int taskdetectionQRD(){
     int onOfft;
-    if(ADC1BUF12 > THRESHOLD){
+    if(ADC1BUF12 > TASKDETECT){
         onOfft = 1;
     }else{
         onOfft = 0;

@@ -13,7 +13,7 @@ void setupSteppers(){
     OC2CON2bits.OCTRIG = 0;
     OC2CON1bits.OCM = 0b110;
     
-    _OC2IP = 4; // Select OC2 interrupt priority
+    _OC2IP = 5; // Select OC2 interrupt priority
     _OC2IE = 1; // Enable OC2 interrupt
     _OC2IF = 0; // Clear OC2 interrupt flag
     

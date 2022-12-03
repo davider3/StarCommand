@@ -19,8 +19,9 @@
 #define TANKTURNSPEED 6000
 #define FORWARDSPEED 6000
 #define FRONTSENSOR !_RB8
-#define LIMIT 300
-#define LANDERDISTANCE 630 //mm
+#define LIMIT 100
+#define LANDERDISTANCE 620 //mm
+#define APPROACHDIS 240 //mm
 
 //GLOBAL VARIABLES
 int OC1Steps = 0;
@@ -35,14 +36,14 @@ int prevState = 0;
 int finished = 0; //0 NOT DONE, 1 DONE
 
 //FSM VARIABLES
-enum{START, LINEFOLLOW, GETBALL} roveState;
+enum{START, LINEFOLLOW, GETBALL, SAMPLERETURN, CANYONNAVIGATION} roveState;
 enum {STRAIGHT, SLIGHTRIGHT, SLIGHTLEFT, HARDRIGHT, HARDLEFT, SEARCH} lineFollowingState;
 enum {ADJUST, GORIGHT, GOLEFT} lineFollowingState2;
 enum {TASKDETECTIONDEFAULT, TASKDETECTIONBLACK, TASKDETECTIONWHITE} taskDetectionState;
 enum {GOSTRAIGHT, WALLDETECTED} canyonState;
 enum {WAIT, WHITEBALL, BLACKBALL} sampleState;
 enum {FORWARD, TURN} startState;
-enum {ALIGN, RIGHT, APPROACH, CATCH, BACKUP, LEFT} getBallState;
+enum {ALIGN, DELAY, RIGHT, APPROACH, CATCH, BACKUP, LEFT} getBallState;
 
 //FUNCTION PROTOTYPES
 //FINITE STATE MACHINES
@@ -81,7 +82,7 @@ int main(void) {
     setupLaser();
   
     //SET UP PARAMETERS FOR STATE MACHINES
-    roveState = START;
+    roveState = LINEFOLLOW;
     lineFollowingState = STRAIGHT;
     driveStraight();
     taskDetectionState = TASKDETECTIONDEFAULT;
@@ -90,13 +91,15 @@ int main(void) {
     startState = FORWARD;
     getBallState = ALIGN;
     
-    //startFSM
-    //goForward(LANDERDISTANCE, 1);
+   // startFSM
+   // goForward(LANDERDISTANCE, 1);
     
     
     while(1){
-        //roveFSM();
-        lineFollowingFSM();
+        roveFSM();
+//        if(taskdetectionQRD()){
+//            debugLED(1);
+//        }else debugLED(0);
     }
     
     return 0;
@@ -138,11 +141,12 @@ void roveFSM(){
             taskDetectionFSM();
             if(finished){
                 finished = 0;
+                lineCount = 0;
                 if(nextTask == 2){
-                    ++nextTask;
-                    debugLED(1);
-                    goForward(230, 1);
                     roveState = GETBALL;
+                    ++nextTask;
+                    driveStraight();
+                    TMR1 = 0;
                 }else if(nextTask == 3){
                     ++nextTask;
                     //RETURN BALL
@@ -154,6 +158,22 @@ void roveFSM(){
             
         case GETBALL:
             getBallFSM();
+            if(finished){
+                finished = 0;
+                roveState = LINEFOLLOW;
+            }
+            break;
+            
+        case SAMPLERETURN:
+            sampleReturnFSM();
+            if(finished){
+                finished = 0;
+                roveState = LINEFOLLOW;
+            }
+            break;
+            
+        case CANYONNAVIGATION:
+            canyonNavigationFSM();
             if(finished){
                 finished = 0;
                 roveState = LINEFOLLOW;
@@ -323,35 +343,40 @@ void taskDetectionFSM(){
             case TASKDETECTIONDEFAULT:
                 if(taskdetectionQRD()){ //IF TASK DETECTION IS BLACK
                     taskDetectionState = TASKDETECTIONBLACK;
-                    OC2Steps = 0;
-                    _OC2IE = 1;
+                    OC3Steps = 0;
+                    _OC3IE = 1;
                     lineCount = 0;
                 }
             break;
             
             case TASKDETECTIONBLACK:
-                if(OC2Steps >= LIMIT){
+                if(OC3Steps >= LIMIT){
                     taskDetectionState = TASKDETECTIONDEFAULT;
-                    _OC2IE = 0;
+                    _OC3IE = 0;
                 }
                 else if(!taskdetectionQRD()){ //IF TASK DETECTION IS WHITE
                     lineCount++;
-                    OC2Steps = 0;
+                    OC3Steps = 0;
                     taskDetectionState = TASKDETECTIONWHITE;
                 }
             break;
             
             case TASKDETECTIONWHITE:
-                if(OC2Steps >= LIMIT){
+                if(OC3Steps >= LIMIT){
                     taskDetectionState = TASKDETECTIONDEFAULT;
-                    _OC2IE = 0;
+                    _OC3IE = 0;
                 }
                 else if(lineCount == nextTask){
                     finished = 1;
+                    taskDetectionState = TASKDETECTIONDEFAULT;
+//                    OC2R = 0;
+//                    OC2RS = 0;
+//                    OC3R = 0;
+//                    OC3RS = 0;
                 }
                 else if(taskdetectionQRD()){ //IF TASK DETECTION IS BLACK
                     taskDetectionState = TASKDETECTIONBLACK;
-                    _OC2IE = 0;
+                    _OC3IE = 0;
                 }
             break;
         }
@@ -381,7 +406,7 @@ void sampleReturnFSM(){
                stop();
                OC2Steps = 0;
             }
-            if(TMR1 > 3*ONESEC){
+            if(TMR1 > ONESEC){
                 if(ballQRD()){
                     sampleState = BLACKBALL;
                     tankTurn(90, CW);
@@ -399,7 +424,7 @@ void sampleReturnFSM(){
                 openGate();
                 OC2Steps = 0;
                 stop();
-            }else if(TMR1 > 3*ONESEC){
+            }else if(TMR1 > ONESEC){
                 sampleState = WAIT;
                 tankTurn(90, CW);
                 closeGate();
@@ -412,7 +437,7 @@ void sampleReturnFSM(){
                 openGate();
                 OC2Steps = 0;
                 stop();
-            }else if(TMR1 > 3*ONESEC){
+            }else if(TMR1 > ONESEC){
                 sampleState = WAIT;
                 tankTurn(90, CCW);
                 closeGate();
@@ -654,18 +679,27 @@ void getBallFSM(){
     switch(getBallState){
         
         case ALIGN:
-            debugLED(0);
-            if(OC2Steps >= stepsToTake){
-                getBallState = RIGHT;
-                tankTurn(90, CW);
+            
+            if(TMR1 >= .4*ONESEC){
+                getBallState = DELAY;
+                stop();
+                TMR1 = 0;
             }
+            break;
+            
+        case DELAY:
+            
+            if(TMR1 > .2*ONESEC){
+                getBallState = RIGHT;
+                tankTurn(85, CW);
+            } 
             break;
             
         case RIGHT:
             
             if(OC2Steps >= stepsToTake){
                 getBallState = APPROACH;
-                goForward(260, 1);
+                goForward(APPROACHDIS, 1);
             }
             break;
             
@@ -681,7 +715,7 @@ void getBallFSM(){
         case CATCH:
             
             if(TMR1 > ONESEC ){
-                goForward(260, 0);
+                goForward(APPROACHDIS, 0);
                 getBallState = BACKUP;
             }
             break;
@@ -689,7 +723,7 @@ void getBallFSM(){
         case BACKUP:
             
             if(OC2Steps >= stepsToTake){
-                tankTurn(90, CCW);
+                tankTurn(80, CCW);
                 getBallState = LEFT;
             }
             break;
@@ -731,6 +765,8 @@ void goForward(int mmDis, int dir){
     stepsToTake = forwardCoeff * mmDis;
     
     OC2Steps = 0;
+    
+    _OC2IE = 1;
     
     //SET PERIOD AND DUTY CYCLE
     OC2RS = FORWARDSPEED;
