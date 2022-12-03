@@ -2,7 +2,7 @@
 #define	CONTROL_FUNCTIONS_H
 
 #include <xc.h> 
-#define FAST 3000
+#define FAST 8000 //3000
 #define SORTAFAST 4000
 #define SLOW 20000
 #define OPENSERVO 30 //TODO: Change for new oscillator

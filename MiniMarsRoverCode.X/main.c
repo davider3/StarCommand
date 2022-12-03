@@ -11,19 +11,21 @@
 #include "checkState.h"
 #include "controlFunctions.h"
 #pragma config FNOSC = FRC //8 MHz oscillator
+#pragma config SOSCSRC = DIG
 
 #define CW 0
 #define CCW 1
 #define ONEREV 200
 #define ONESEC 15625
-#define TANKTURNSPEED 6000
+#define TANKTURNSPEED 10000 //6000
 #define FORWARDSPEED 6000
-#define FRONTSENSOR !_RB8
+#define FRONTSENSOR !_RA4
 #define LEFTSENSOR !_RB4
 #define LIMIT 100
 #define LANDERDISTANCE 620 //mm
 #define APPROACHDIS 240 //mm
-#define PASSLINEDIS 220 //mm
+#define PASSLINEDIS 210 //mm
+#define DROPBALLDIS 100 //mm
 
 //GLOBAL VARIABLES
 int OC1Steps = 0;
@@ -42,7 +44,7 @@ int ball = 0; //0 is white, 1 is black
 enum{START, LINEFOLLOW, GETBALL, SAMPLERETURN, CANYONNAVIGATION, SERVICE, RETURNTOLANDER} roveState;
 enum {STRAIGHT, SLIGHTRIGHT, SLIGHTLEFT, HARDRIGHT, HARDLEFT, SEARCH} lineFollowingState;
 enum {TASKDETECTIONDEFAULT, TASKDETECTIONBLACK, TASKDETECTIONWHITE} taskDetectionState;
-enum {GOSTRAIGHT, WALLDETECTED, EXIT} canyonState;
+enum {GOSTRAIGHT, WALLDETECTED, LINEEMUP, EXIT} canyonState;
 enum {GETLINEDUP, SPIN, OPENGATE, SPINBACK} sampleState;
 enum {FORWARD, TURN} startState;
 enum {ALIGN, DELAY, RIGHT, APPROACH, CATCH, BACKUP, LEFT} getBallState;
@@ -96,21 +98,26 @@ int main(void) {
     
     
     //goForward(LANDERDISTANCE, 1);
-    
+    closeGate();
+    driveStraight();
     
     while(1){
         //roveFSM();
-        
+        canyonNavigationFSM();
 //        if(taskdetectionQRD()){
 //            debugLED(1);
 //        }else debugLED(0);
         
-        if(TMR1 > 2*ONESEC){
-            openGate();
-            TMR1 = 0;
-        }else if(TMR1 > ONESEC){
-            closeGate();
-        }
+//        if(TMR1 > 2*ONESEC){
+//            openGate();
+//            TMR1 = 0;
+//        }else if(TMR1 > ONESEC){
+//            closeGate();
+//        }
+        
+//        if(LEFTSENSOR){
+//            debugLED(1);
+//        }else debugLED(0);
     }
     
     return 0;
@@ -148,26 +155,23 @@ void roveFSM(){
             break;
             
         case LINEFOLLOW:
-            debugLED(1);
             lineFollowingFSM();
             taskDetectionFSM();
             if(finished){
                 finished = 0;
                 lineCount = 0;
                 if(nextTask == 2){
-                    debugLED(0);
                     roveState = GETBALL;
                     ++nextTask;
                     goForward(PASSLINEDIS, 1);
                     catchBall();
                 }else if(nextTask == 3){
                     ++nextTask;
-                    goForward(80, 1);
+                    roveState = SAMPLERETURN;
+                    goForward(DROPBALLDIS, 1);
                 }else if(nextTask == 4){
-                    
+                    roveState = CANYONNAVIGATION;
                     driveStraight();
-                    
-                    //CANYON
                 }
             }else if(0){ //CHECK THE STATE OF THE IR SENSOR ON THE RIGHT
                 tankTurn(90, CW);
@@ -415,8 +419,9 @@ void taskDetectionFSM(){
 }
 void canyonNavigationFSM(){
     switch(canyonState){
+        
         case GOSTRAIGHT:
-            
+            debugLED(1);
             if(FRONTSENSOR){
                 canyonState = WALLDETECTED;
                 if(LEFTSENSOR){
@@ -424,13 +429,11 @@ void canyonNavigationFSM(){
                 }else{
                     tankTurn(90, CCW);
                 }
-            }else if(taskdetectionQRD()){
-                canyonState = EXIT;
-                if(LEFTSENSOR){
-                    tankTurn(90, CW);
-                }else{
-                    tankTurn(90, CCW);
-                }
+            }
+            else if(midQRD()){
+
+                canyonState = LINEEMUP;
+                goForward(90, 1); 
             }
             break;
             
@@ -442,10 +445,23 @@ void canyonNavigationFSM(){
             }
             break;
             
-        case EXIT:
+        case LINEEMUP:
+            if(OC2Steps >= stepsToTake){
+                canyonState = EXIT;
+                if(LEFTSENSOR){
+                    tankTurn(90, CW);
+                }else{
+                    tankTurn(90, CCW);
+                }
+            }
+            break;
+                
             
+        case EXIT:
+            debugLED(0);
             if(OC2Steps >= stepsToTake){
                 finished = 1;
+                stop();
             }
             break;
     }
@@ -633,10 +649,10 @@ void tankTurn(int degrees, int dir){
     OC2Steps = 0;
     
     //SET PERIOD AND DUTY CYCLE
-    OC2RS = TANKTURNSPEED;
-    OC2R = TANKTURNSPEED/2;
-    OC3RS = TANKTURNSPEED;
-    OC3R = TANKTURNSPEED/2;
+    OC2RS = TANKTURNSPEED/2;
+    OC2R = OC2RS/2;
+    OC3RS = TANKTURNSPEED/2;
+    OC3R = OC3RS/2/4;
     
     //WRITE TO DIRECTION PINS
     _LATA0 = dir;

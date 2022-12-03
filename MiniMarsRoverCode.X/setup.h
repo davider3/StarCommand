@@ -108,7 +108,11 @@ void turnOnADC(){
 
 void setupDistanceSensors(){
     //FRONT SENSOR
-    _TRISB8 = 1;
+    _TRISA4 = 1;
+    
+    //LEFT SENSOR
+    _TRISB4 = 1;
+    _ANSB4 = 0;
 }
 
 void setupServo(){
