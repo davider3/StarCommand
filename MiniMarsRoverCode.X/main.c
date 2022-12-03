@@ -19,6 +19,7 @@
 #define TANKTURNSPEED 6000
 #define FORWARDSPEED 6000
 #define FRONTSENSOR !_RB8
+#define LEFTSENSOR !_RB4
 #define LIMIT 100
 #define LANDERDISTANCE 620 //mm
 #define APPROACHDIS 240 //mm
@@ -34,14 +35,14 @@ int lineCount = 0;
 int nextTask = 2;
 int prevState = 0;
 int finished = 0; //0 NOT DONE, 1 DONE
+int ball = 0; //0 is white, 1 is black
 
 //FSM VARIABLES
-enum{START, LINEFOLLOW, GETBALL, SAMPLERETURN, CANYONNAVIGATION} roveState;
+enum{START, LINEFOLLOW, GETBALL, SAMPLERETURN, CANYONNAVIGATION, SERVICE, RETURNTOLANDER} roveState;
 enum {STRAIGHT, SLIGHTRIGHT, SLIGHTLEFT, HARDRIGHT, HARDLEFT, SEARCH} lineFollowingState;
-enum {ADJUST, GORIGHT, GOLEFT} lineFollowingState2;
 enum {TASKDETECTIONDEFAULT, TASKDETECTIONBLACK, TASKDETECTIONWHITE} taskDetectionState;
-enum {GOSTRAIGHT, WALLDETECTED} canyonState;
-enum {WAIT, WHITEBALL, BLACKBALL} sampleState;
+enum {GOSTRAIGHT, WALLDETECTED, EXIT} canyonState;
+enum {GETLINEDUP, SPIN, OPENGATE, SPINBACK} sampleState;
 enum {FORWARD, TURN} startState;
 enum {ALIGN, DELAY, RIGHT, APPROACH, CATCH, BACKUP, LEFT} getBallState;
 
@@ -87,7 +88,7 @@ int main(void) {
     driveStraight();
     taskDetectionState = TASKDETECTIONDEFAULT;
     canyonState = GOSTRAIGHT;
-    sampleState = WAIT;
+    sampleState = GETLINEDUP;
     startState = FORWARD;
     getBallState = ALIGN;
     
@@ -96,7 +97,7 @@ int main(void) {
     
     
     while(1){
-        roveFSM();
+        lineFollowingFSM();
 //        if(taskdetectionQRD()){
 //            debugLED(1);
 //        }else debugLED(0);
@@ -145,12 +146,17 @@ void roveFSM(){
                 if(nextTask == 2){
                     roveState = GETBALL;
                     ++nextTask;
-                    driveStraight();
-                    TMR1 = 0;
+                    goForward(200, 1);
                 }else if(nextTask == 3){
                     ++nextTask;
+                    
+                    goForward(200, 1);
+                    
                     //RETURN BALL
                 }else if(nextTask == 4){
+                    
+                    driveStraight();
+                    
                     //CANYON
                 }
             }
@@ -178,6 +184,14 @@ void roveFSM(){
                 finished = 0;
                 roveState = LINEFOLLOW;
             }
+            break;
+            
+        case SERVICE:
+            
+            break;
+            
+        case RETURNTOLANDER:
+            
             break;
     }
 }
@@ -387,7 +401,11 @@ void canyonNavigationFSM(){
             if(FRONTSENSOR){
                 canyonState = WALLDETECTED;
                 OC2Steps = 0;
-                tankTurn(90, CW);
+                if(LEFTSENSOR){
+                    tankTurn(90, CW);
+                }else{
+                    tankTurn(90, CCW);
+                }
             }
             break;
             
@@ -397,260 +415,56 @@ void canyonNavigationFSM(){
                 driveStraight();
             }
             break;
+            
+        case EXIT:
+            
+            break;
     }
 }
 void sampleReturnFSM(){
     switch(sampleState){
-        case WAIT:
+        
+        case GETLINEDUP:
+            
             if(OC2Steps >= stepsToTake){
-               stop();
-               OC2Steps = 0;
-            }
-            if(TMR1 > ONESEC){
                 if(ballQRD()){
-                    sampleState = BLACKBALL;
                     tankTurn(90, CW);
-                    TMR1 = 0;
-                }else if(!ballQRD()){
-                    sampleState = WHITEBALL;
+                    sampleState = SPIN;
+                    ball = 1;
+                }else{
                     tankTurn(90, CCW);
-                    TMR1 = 0;
+                    sampleState = SPIN;
+                    ball = 0;
                 }
             }
             break;
             
-        case WHITEBALL:
-            if(OC2Steps >= stepsToTake){
-                openGate();
-                OC2Steps = 0;
-                stop();
-            }else if(TMR1 > ONESEC){
-                sampleState = WAIT;
-                tankTurn(90, CW);
-                closeGate();
+        case SPIN:
+            
+            if(OC2Steps >=  stepsToTake){
                 TMR1 = 0;
+                sampleState = OPENGATE;
+                stop();
+                openGate();
             }
             break;
             
-        case BLACKBALL:
-            if(OC2Steps >= stepsToTake){
-                openGate();
-                OC2Steps = 0;
-                stop();
-            }else if(TMR1 > ONESEC){
-                sampleState = WAIT;
-                tankTurn(90, CCW);
+        case OPENGATE:
+            
+            if(TMR1 >= .4*ONESEC){
+                tankTurn(90, ball);
+                sampleState = SPINBACK;
                 closeGate();
-                TMR1 = 0;
+            }
+            break;
+            
+        case SPINBACK:
+            
+            if(OC2Steps >= stepsToTake){
+                finished = 1;
             }
             break;
     }
-}
-void lineFollowingFSM2(){
-    //LINE FOLLOWING FSM
-        switch(lineFollowingState2){
-            
-            case ADJUST: //ADJUSTMENT State
-                adjRL();
-                /*if(!midQRD()) //IF CENTER QRD IS WHITE
-                {
-                    if(rightQRD()) //IF RIGHT QRD IS BLACK
-                    {
-                        hardRight();
-                        lineFollowingState2 = GORIGHT;
-                    }
-                    else if(leftQRD()){  //IF LEFT QRD IS BLACK
-                        hardLeft();
-                        lineFollowingState2 = GOLEFT;
-                    }
-                }*/
-                break;
-                
-            case GORIGHT:
-                hardRight();
-                if(midQRD()){ //IF MIDDLE IS BLACK
-                    adjRL();
-                    lineFollowingState2 = ADJUST;
-                }
-            
-                
-                break;
-                
-                
-            case GOLEFT:
-                prevState = 0;
-                hardLeft();
-                if(midQRD()){ //IF MIDDLE IS BLACK
-                    adjRL();
-                    lineFollowingState2 = ADJUST;
-                }
-                
-              
-                break;
-                
-            
-        }
-}
-void lineFollowingFSM3(){
-    //LINE FOLLOWING FSM
-        switch(lineFollowingState){
-            
-            case STRAIGHT:
-                driveStraight2();
-                if(rightQRD()){ //RIGHTQRD IS BLACK
-                    if(midQRD()){
-                        slightRight2();
-                        lineFollowingState = SLIGHTRIGHT;
-                    }else{
-                        hardRight2();
-                        lineFollowingState = HARDRIGHT;
-                    }
-                }else if(leftQRD()){ //LEFTQRD is BLACK
-                    if(midQRD()){
-                        slightLeft2();
-                        lineFollowingState = SLIGHTLEFT;
-                    }else{
-                        hardLeft2();
-                        lineFollowingState = HARDLEFT;
-                    }
-                }
-                break;
-                
-                
-            case SLIGHTRIGHT:
-                prevState = 1;
-                slightRight2();
-                if(rightQRD()){ //RIGHTQRD IS BLACK
-                    if(!midQRD()){
-                        hardRight2();
-                        lineFollowingState = HARDRIGHT;
-                    }
-                }else if(leftQRD()){ //LEFTQRD is BLACK
-                    if(midQRD()){
-                        slightLeft2();
-                        lineFollowingState = SLIGHTLEFT;
-                    }else{
-                        hardLeft2();
-                        lineFollowingState = HARDLEFT;
-                    }
-                }else if(midQRD()){ //IF MIDDLE IS BLACK
-                    driveStraight2();
-                    lineFollowingState = STRAIGHT;
-                }
-                else{
-                    lineFollowingState = SEARCH;
-                    search(prevState);
-                }
-                break;
-                
-                
-            case SLIGHTLEFT:
-                prevState = 0;
-                slightLeft2();
-                if(rightQRD()){ //RIGHTQRD IS BLACK
-                    if(midQRD()){
-                        slightRight2();
-                        lineFollowingState = SLIGHTRIGHT;
-                    }else{
-                        hardRight2();
-                        lineFollowingState = HARDRIGHT;
-                    }
-                }else if(leftQRD()){ //LEFTQRD is BLACK
-                    if(!midQRD()){
-                        hardLeft2();
-                        lineFollowingState = HARDLEFT;
-                    }
-                }else if(midQRD()){ //IF MIDDLE IS BLACK
-                    driveStraight2();
-                    lineFollowingState = STRAIGHT;
-                }
-                else{
-                    lineFollowingState = SEARCH;
-                    search(prevState);
-                }
-                break;
-                
-                
-            case HARDRIGHT:
-                prevState = 1;
-                hardRight2();
-                if(rightQRD()){ //RIGHTQRD IS BLACK
-                    if(midQRD()){
-                        slightRight2();
-                        lineFollowingState = SLIGHTRIGHT;
-                    }
-                }else if(leftQRD()){ //LEFTQRD IS BLACK
-                    if(midQRD()){
-                        slightLeft2();
-                        lineFollowingState = SLIGHTLEFT;
-                    }else{
-                        hardLeft2();
-                        lineFollowingState = HARDLEFT;
-                    }
-                }else if(midQRD()){ //IF MIDDLE IS BLACK
-                    driveStraight2();
-                    lineFollowingState = STRAIGHT;
-                }
-                else{
-                    lineFollowingState = SEARCH;
-                    search(prevState);
-                }
-                break;
-                
-                
-            case HARDLEFT:
-                prevState = 0;
-                hardLeft2();
-                if(rightQRD()){ //RIGHTQRD IS BLACK
-                    if(midQRD()){
-                        slightRight2();
-                        lineFollowingState = SLIGHTRIGHT;
-                    }else{
-                        hardRight2();
-                        lineFollowingState = HARDRIGHT;
-                    }
-                }else if(leftQRD()){ //LEFTQRD IS BLACK
-                    if(midQRD()){
-                        slightLeft2();
-                        lineFollowingState = SLIGHTLEFT;
-                    }
-                }else if(midQRD()){ //IF MIDDLE IS BLACK
-                    driveStraight2();
-                    lineFollowingState = STRAIGHT;
-                }
-                else{
-                    lineFollowingState = SEARCH;
-                    search(prevState);
-                }
-                break;
-                
-            case SEARCH:
-                if(rightQRD()){ //RIGHTQRD IS BLACK
-                    if(midQRD()){
-                        slightRight2();
-                        lineFollowingState = SLIGHTRIGHT;
-                    }else{
-                        hardRight2();
-                        lineFollowingState = HARDRIGHT;
-                    }
-                }else if(leftQRD()){ //LEFTQRD IS BLACK
-                    if(midQRD()){
-                        slightLeft2();
-                        lineFollowingState = SLIGHTLEFT;
-                    }else{
-                        hardLeft2();
-                        lineFollowingState = HARDLEFT;
-                    }
-                }else if(midQRD()){ //IF MIDDLE IS BLACK
-                    driveStraight2();
-                    lineFollowingState = STRAIGHT;
-                }
-            
-            
-                break;
-                
-                
-        }
 }
 void startFSM(){
     switch(startState){
@@ -680,7 +494,7 @@ void getBallFSM(){
         
         case ALIGN:
             
-            if(TMR1 >= .4*ONESEC){
+            if(OC2Steps >= stepsToTake){
                 getBallState = DELAY;
                 stop();
                 TMR1 = 0;
