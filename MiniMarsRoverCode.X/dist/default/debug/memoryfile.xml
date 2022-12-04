@@ -1,18 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <project>
-  <executable name="dist/default/production/MiniMarsRoverCode.X.production.elf">
+  <executable name="dist/default/debug/MiniMarsRoverCode.X.debug.elf">
     <memory name="data">
       <units>bytes</units>
       <length>2048</length>
-      <used>46</used>
-      <free>2002</free>
+      <used>122</used>
+      <free>1926</free>
     </memory>
     <memory name="program">
       <units>bytes</units>
       <length>16128</length>
-      <used>7836</used>
-      <free>8292</free>
+      <used>7107</used>
+      <free>9021</free>
     </memory>
   </executable>
 </project>

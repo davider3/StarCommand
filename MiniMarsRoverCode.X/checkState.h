@@ -4,6 +4,8 @@
 #include <xc.h> 
 #define THRESHOLD 2000
 #define TASKDETECT 2000
+#define CANYONTHRESHOLD 3000
+#define LANDERTHRESHOLD 3000
 
 int rightQRD(){
     int onOffr;
@@ -60,15 +62,26 @@ int ballQRD(){
     return onOffb; 
 }
 
-int returnToLanderQRD(){
+int landerQRD(){
    int onOffb;
-    if(ADC1BUF10 > THRESHOLD){
+    if(ADC1BUF10 > LANDERTHRESHOLD){
         onOffb = 1;
     }else{
         onOffb = 0;
     }
     
     return onOffb; 
+}
+
+int exitCanyonQRD(){
+    int onOffm;
+    if(ADC1BUF13 > CANYONTHRESHOLD){
+        onOffm = 1;
+    }else{
+        onOffm = 0;
+    }
+    
+    return onOffm;
 }
 
 int photodiode(){

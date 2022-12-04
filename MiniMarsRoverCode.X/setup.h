@@ -145,11 +145,9 @@ void setupLaser(){
     _TRISB8 = 0;
 }
 
-//SERVICE TASK SENSOR RB9
-
-//LEFT CANYON RB4 
-
-//FRONT CANYON RA4
+void setupServiceDiode(){
+    _TRISB9 = 1;
+}
 
 #endif	// SETUP_H
 

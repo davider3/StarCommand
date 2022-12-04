@@ -2,7 +2,9 @@
 #define	CONTROL_FUNCTIONS_H
 
 #include <xc.h> 
-#define FAST 8000 //3000
+#include "checkState.h"
+#define FAST 3000 //3000 for fast, 8000 for canyon
+#define CANYONSPEED 8000
 #define SORTAFAST 4000
 #define SLOW 20000
 #define OPENSERVO 30 //TODO: Change for new oscillator
@@ -10,6 +12,7 @@
 #define CATCHSERVO 18
 #define SERVOPERIOD 390
 #define FILTERWEIGHT 0.1
+#define ONESEC 15625
 
 void driveStraight(){
     
@@ -18,6 +21,20 @@ void driveStraight(){
     OC2R = FAST/2;
     OC3RS = FAST;
     OC3R = FAST/2;
+    
+    //WRITE TO DIRECTION PINS
+    _LATA0 = 1;
+    _LATA1 = 0;
+    
+}
+
+void canyonStraight(){
+    
+    //SET PERIOD AND DUTY CYCLE
+    OC2RS = CANYONSPEED;
+    OC2R = CANYONSPEED/2;
+    OC3RS = CANYONSPEED;
+    OC3R = CANYONSPEED/2;
     
     //WRITE TO DIRECTION PINS
     _LATA0 = 1;
@@ -141,7 +158,7 @@ void turnOffLaser(){
 void IRSearch(){
     //Servo opens door to horizontal
     if(OC1R > CLOSESERVO){
-        if(TMR1 > 400){
+        if(TMR1 > 4000){
         OC1R = OC1R - 0.5;
         TMR1 = 0;
     }
@@ -247,6 +264,32 @@ void hardLeft2(){
     _LATA0 = 1; //RIGHT
     _LATA1 = 0; //LEFT
 }
+
+void moveServo(float dutyCycle){
+    OC1RS = SERVOPERIOD;
+    OC1R = dutyCycle;
+}
+
+void findSat(){
+    int servoAngle = 25;
+    int bestAngle = 25;
+    int maxSat = 0;
+    TMR1 = 0;
+    while(servoAngle >= CLOSESERVO){
+        moveServo(servoAngle);
+        if(TMR1 >= ONESEC){
+            TMR1 = 0;
+            if(photodiode() > maxSat){
+                maxSat = photodiode();
+                bestAngle = servoAngle;
+            }
+            servoAngle -= .5;
+        }
+    }
+    
+    moveServo(bestAngle);
+}
+
 
 
 
