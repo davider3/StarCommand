@@ -52,7 +52,7 @@ enum {GETLINEDUP, SPIN, OPENGATE, SPINBACK} sampleState;
 enum {FORWARD, TURN} startState;
 enum {ALIGN, DELAY, RIGHT, APPROACH, CATCH, BACKUP, LEFT} getBallState;
 enum {STOP, TURNING, GOTOPUSH, BACKITUP, TURNBACK} serviceState;
-enum {HOLDIT, TURNIN, RETURN, SWEEP} endState;
+enum {HOLDIT, TURNIN, RETURN, SWEEP, END} endState;
 
 //FUNCTION PROTOTYPES
 //FINITE STATE MACHINES
@@ -651,37 +651,48 @@ void returnToLanderFSM(){
     
     switch(endState){
         
-    case HOLDIT:
-        
-        if(TMR1 >= .2*ONESEC){
-            tankTurn(80, CW);
-            endState = TURNIN;
-        }    
-        break;
-        
-    case TURNIN:
-        if(OC2Steps >= stepsToTake){
-            endState = RETURN;
-            goForward(LANDERDISTANCE, 0);
-        }
-        break;
-        
-    case RETURN:
-        if(OC2Steps >= stepsToTake){
-            endState = SWEEP;
-            stop();
-        }        
-        break;
-        
-    case SWEEP:
-        if(photodiode() < 500){
-            turnOffLaser(); 
-            IRSearch();
-        }else{
+        case HOLDIT:
+
+            if(TMR1 >= .2*ONESEC){
+                tankTurn(80, CW);
+                endState = TURNIN;
+            }    
+            break;
+
+        case TURNIN:
+            if(OC2Steps >= stepsToTake){
+                endState = RETURN;
+                goForward(LANDERDISTANCE, 0);
+            }
+            break;
+
+        case RETURN:
+            if(OC2Steps >= stepsToTake){
+                endState = SWEEP;
+                stop();
+            }        
+            break;
+
+        case SWEEP:
+//            if(photodiode() < 1200){
+//                turnOffLaser(); 
+//                IRSearch();
+//            }else{
+//                turnOnLaser();
+//                endState = END;
+//            }
+            
+            findSat();
             turnOnLaser();
-        }
-        break;
+            endState = END;
+            
+            break;
+
+        case END:
+
+            break;
     }
+    
 }
 //CONTROL FUNCTION DEFINITIONS
 void tankTurn(int degrees, int dir){

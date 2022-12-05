@@ -158,8 +158,8 @@ void turnOffLaser(){
 void IRSearch(){
     //Servo opens door to horizontal
     if(OC1R > CLOSESERVO){
-        if(TMR1 > 4000){
-        OC1R = OC1R - 0.5;
+        if(TMR1 > 2000){
+        OC1R = OC1R - 0.1;
         TMR1 = 0;
     }
     }
@@ -190,81 +190,6 @@ void adjRL(){
     
 }
 
-void driveStraight2(){
-    
-    //SET PERIOD AND DUTY CYCLE
-    OC2RS = (1-FILTERWEIGHT)*OC2RS + FILTERWEIGHT*FAST;
-    OC2R = OC2RS/2;
-    OC3RS = (1-FILTERWEIGHT)*OC3RS + FILTERWEIGHT*FAST;
-    OC3R = OC3RS/2;
-    
-    //WRITE TO DIRECTION PINS
-    _LATA0 = 1;
-    _LATA1 = 0;
-    
-}
-
-void slightRight2(){
-    
-    //SET PERIOD AND DUTY CYCLE
-    //RIGHT
-    OC2RS = (1-FILTERWEIGHT)*OC2RS + FILTERWEIGHT*SORTAFAST;
-    OC2R = OC2RS/2;
-    //LEFT
-    OC3RS = (1-FILTERWEIGHT)*OC3RS + FILTERWEIGHT*FAST;
-    OC3R = OC3RS/2;
-    
-    //WRITE TO DIRECTION PINS
-    _LATA0 = 1; //RIGHT
-    _LATA1 = 0; //LEFT
-    
-}
-
-void slightLeft2(){
-    
-    //SET PERIOD AND DUTY CYCLE
-    //RIGHT
-    OC2RS = (1-FILTERWEIGHT)*OC2RS + FILTERWEIGHT*FAST;
-    OC2R = OC2RS/2;
-    //LEFT
-    OC3RS = (1-FILTERWEIGHT)*OC3RS + FILTERWEIGHT*SORTAFAST;
-    OC3R = OC3RS/2;
-    
-    //WRITE TO DIRECTION PINS
-    _LATA0 = 1; //RIGHT
-    _LATA1 = 0; //LEFT
-}
-
-void hardRight2(){
-    
-    //SET PERIOD AND DUTY CYCLE
-    //RIGHT
-    OC2RS = (1-FILTERWEIGHT)*OC2RS + FILTERWEIGHT*SLOW;
-    OC2R = OC2RS/2;
-    //LEFT
-    OC3RS = (1-FILTERWEIGHT)*OC3RS + FILTERWEIGHT*FAST;
-    OC3R = OC3RS/2;
-    
-    //WRITE TO DIRECTION PINS
-    _LATA0 = 1; //RIGHT
-    _LATA1 = 0; //LEFT
-}
-
-void hardLeft2(){
-    
-    //SET PERIOD AND DUTY CYCLE
-    //RIGHT
-    OC2RS = (1-FILTERWEIGHT)*OC2RS + FILTERWEIGHT*FAST;
-    OC2R = OC2RS/2;
-    //LEFT
-    OC3RS = (1-FILTERWEIGHT)*OC3RS + FILTERWEIGHT*SLOW;
-    OC3R = OC3RS/2;
-    
-    //WRITE TO DIRECTION PINS
-    _LATA0 = 1; //RIGHT
-    _LATA1 = 0; //LEFT
-}
-
 void moveServo(float dutyCycle){
     OC1RS = SERVOPERIOD;
     OC1R = dutyCycle;
@@ -277,13 +202,13 @@ void findSat(){
     TMR1 = 0;
     while(servoAngle >= CLOSESERVO){
         moveServo(servoAngle);
-        if(TMR1 >= ONESEC){
+        if(TMR1 >= .3*ONESEC){
             TMR1 = 0;
             if(photodiode() > maxSat){
                 maxSat = photodiode();
                 bestAngle = servoAngle;
             }
-            servoAngle -= .5;
+            servoAngle -= .2;
         }
     }
     
