@@ -3,8 +3,9 @@
 
 #include <xc.h> 
 #include "checkState.h"
+#define STARTSPEED 4000
 #define FAST 3000 //3000 for fast, 8000 for canyon
-#define CANYONSPEED 8000
+#define CANYONSPEED 6000
 #define SORTAFAST 4000
 #define SLOW 20000
 #define OPENSERVO 30 //TODO: Change for new oscillator
@@ -13,6 +14,19 @@
 #define SERVOPERIOD 390
 #define FILTERWEIGHT 0.1
 #define ONESEC 15625
+
+void straightStart(){
+    
+    //SET PERIOD AND DUTY CYCLE
+    OC2RS = STARTSPEED;
+    OC2R = STARTSPEED/2;
+    OC3RS = STARTSPEED;
+    OC3R = STARTSPEED/2;
+    
+    //WRITE TO DIRECTION PINS
+    _LATA0 = 1;
+    _LATA1 = 0;
+}
 
 void driveStraight(){
     

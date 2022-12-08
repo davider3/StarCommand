@@ -18,7 +18,7 @@
 #define ONEREV 200
 #define ONESEC 15625
 #define TANKTURNSPEED 14000 //6000 is for faster, 10000 for canyon
-#define FORWARDSPEED 14000
+#define FORWARDSPEED 12000
 #define SERVICEDETECTOR !_RB9
 #define FRONTSENSOR !_RA4
 #define LEFTSENSOR !_RB4
@@ -28,6 +28,7 @@
 #define PASSLINEDIS 170 //mm
 #define DROPBALLDIS 150 //mm
 #define CANYONEXITDIS 70 //mm
+#define RAMMINGSPEED 6000
 
 //GLOBAL VARIABLES
 int OC1Steps = 0;
@@ -70,6 +71,7 @@ void returnToLanderFSM();
 //CONTROL FUNCTIONS
 void tankTurn(int degrees, int dir);
 void goForward(int mmDis, int dir);
+void ramming(int mmDis, int dir);
 //INTERRUPTS
 void __attribute__((interrupt, no_auto_psv)) _OC1Interrupt(void);
 void __attribute__((interrupt, no_auto_psv)) _OC2Interrupt(void);
@@ -104,7 +106,7 @@ int main(void) {
     serviceState = STOP;
     endState = HOLDIT;
     
-    goForward(LANDERDISTANCE, 1);
+    straightStart();
     closeGate();
     
     while(1){
@@ -168,7 +170,7 @@ void roveFSM(){
                     goForward(DROPBALLDIS, 1);
                 }else if(nextTask == 4){
                     roveState = CANYONNAVIGATION;
-                    goForward(250, 1);
+                    goForward(150, 1);
                 }
             }else if(SERVICEDETECTOR && !doneIR && doneCanyon){
                 doneIR = 1;
@@ -524,7 +526,7 @@ void startFSM(){
         
         case FORWARD:
             
-            if(OC2Steps >= stepsToTake){
+            if(taskdetectionQRD()){
                 tankTurn(90, CCW);
                 startState = TURN;
             }
@@ -621,7 +623,7 @@ void serviceFSM(){
             
             if(OC2Steps >= stepsToTake){
                 serviceState = GOTOPUSH;
-                goForward(APPROACHDIS, 1);
+                ramming(APPROACHDIS, 1);
             }                
             break;
                 
@@ -659,7 +661,7 @@ void returnToLanderFSM(){
         case HOLDIT:
 
             if(TMR1 >= .2*ONESEC){
-                tankTurn(88, CW);
+                tankTurn(86, CW);
                 endState = TURNIN;
             }    
             break;
@@ -721,6 +723,30 @@ void tankTurn(int degrees, int dir){
 }
 void goForward(int mmDis, int dir){
     
+    stepsToTake = forwardCoeff * mmDis;
+    
+    OC2Steps = 0;
+    
+    _OC2IE = 1;
+    
+    //SET PERIOD AND DUTY CYCLE
+    OC2RS = FORWARDSPEED;
+    OC2R = FORWARDSPEED/2;
+    OC3RS = FORWARDSPEED;
+    OC3R = FORWARDSPEED/2;
+    
+    //WRITE TO DIRECTION PINS
+    //1 IS FORWARD, 0 IS REVERSE
+    if(dir){
+        _LATA0 = 1; //GOING FORWARD
+        _LATA1 = 0;
+    }else{
+        _LATA0 = 0; //GOING REVERSE
+        _LATA1 = 1;
+    }
+}
+void ramming(int mmDis, int dir){
+        
     stepsToTake = forwardCoeff * mmDis;
     
     OC2Steps = 0;
