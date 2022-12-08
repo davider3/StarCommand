@@ -17,15 +17,15 @@
 #define CCW 1
 #define ONEREV 200
 #define ONESEC 15625
-#define TANKTURNSPEED 10000 //6000 is for faster, 10000 for canyon
-#define FORWARDSPEED 10000
+#define TANKTURNSPEED 14000 //6000 is for faster, 10000 for canyon
+#define FORWARDSPEED 14000
 #define SERVICEDETECTOR !_RB9
 #define FRONTSENSOR !_RA4
 #define LEFTSENSOR !_RB4
 #define LIMIT 100
 #define LANDERDISTANCE 620 //mm
-#define APPROACHDIS 240 //mm
-#define PASSLINEDIS 190 //mm
+#define APPROACHDIS 230 //mm
+#define PASSLINEDIS 170 //mm
 #define DROPBALLDIS 150 //mm
 #define CANYONEXITDIS 70 //mm
 
@@ -42,6 +42,7 @@ int prevState = 0;
 int finished = 0; //0 NOT DONE, 1 DONE
 int ball = 0; //0 is white, 1 is black
 int doneIR = 0;
+int doneCanyon = 0;
 
 //FSM VARIABLES
 enum{START, LINEFOLLOW, GETBALL, SAMPLERETURN, CANYONNAVIGATION, SERVICE, RETURNTOLANDER} roveState;
@@ -58,8 +59,6 @@ enum {HOLDIT, TURNIN, RETURN, SWEEP, END} endState;
 //FINITE STATE MACHINES
 void roveFSM();
 void lineFollowingFSM();
-void lineFollowingFSM2();
-void lineFollowingFSM3();
 void taskDetectionFSM();
 void canyonNavigationFSM();
 void sampleReturnFSM();
@@ -111,6 +110,10 @@ int main(void) {
     while(1){
         
         roveFSM();
+        
+//        if(landerQRD()){
+//            debugLED(1);
+//        }else debugLED(0);
         
     }
     
@@ -167,12 +170,13 @@ void roveFSM(){
                     roveState = CANYONNAVIGATION;
                     goForward(250, 1);
                 }
-            }else if(SERVICEDETECTOR && !doneIR){ 
+            }else if(SERVICEDETECTOR && !doneIR && doneCanyon){
+                doneIR = 1;
                 stop();
                 TMR1 = 0;
                 roveState = SERVICE;
                 
-            }else if(landerQRD() && doneIR && TMR1 > 2*ONESEC){
+            }else if(landerQRD() && doneIR){
                 roveState = RETURNTOLANDER;
                 stop();
                 TMR1 = 0;
@@ -465,6 +469,7 @@ void canyonNavigationFSM(){
             debugLED(0);
             if(OC2Steps >= stepsToTake){
                 finished = 1;
+                doneCanyon = 1;
             }
             break;
     }
@@ -553,7 +558,7 @@ void getBallFSM(){
             
             if(TMR1 > .2*ONESEC){
                 getBallState = RIGHT;
-                tankTurn(85, CW);
+                tankTurn(88, CW);
             } 
             break;
             
@@ -586,7 +591,7 @@ void getBallFSM(){
         case BACKUP:
             
             if(OC2Steps >= stepsToTake){
-                tankTurn(80, CCW);
+                tankTurn(88, CCW);
                 getBallState = LEFT;
             }
             break;
@@ -654,7 +659,7 @@ void returnToLanderFSM(){
         case HOLDIT:
 
             if(TMR1 >= .2*ONESEC){
-                tankTurn(80, CW);
+                tankTurn(88, CW);
                 endState = TURNIN;
             }    
             break;

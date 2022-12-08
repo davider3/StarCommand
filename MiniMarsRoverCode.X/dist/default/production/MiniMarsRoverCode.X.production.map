@@ -99,20 +99,20 @@ Default Scalar Model: Small
 section                    address   length (PC units)   length (bytes) (dec)
 -------                    -------   -----------------   --------------------
 .text                        0x200               0x6a4           0x9f6  (2550)
-.text                        0x8a4               0xc62          0x1293  (4755)
-.dinit                      0x1506                0x16            0x21  (33)
+.text                        0x8a4               0xc64          0x1296  (4758)
+.dinit                      0x1508                0x16            0x21  (33)
 
-                 Total "program" memory used (bytes):         0x1caa  (7338) 45%
+                 Total "program" memory used (bytes):         0x1cad  (7341) 45%
 
 
 "data" Memory  [Origin = 0x800, Length = 0x800]
 
 section                    address      alignment gaps    total length  (dec)
 -------                    -------      --------------    -------------------
-.nbss                        0x800                   0            0x24  (36)
-.ndata                       0x824                   0             0xa  (10)
+.nbss                        0x800                   0            0x26  (38)
+.ndata                       0x826                   0             0xa  (10)
 
-                 Total "data" memory used (bytes):           0x2e  (46) 2%
+                 Total "data" memory used (bytes):           0x30  (48) 2%
 
 
 Dynamic Memory Usage
@@ -120,9 +120,9 @@ Dynamic Memory Usage
 region                     address                      maximum length  (dec)
 ------                     -------                      ---------------------
 heap                             0                                   0  (0)
-stack                        0x82e                               0x7d2  (2002)
+stack                        0x830                               0x7d0  (2000)
 
-                 Maximum dynamic memory (bytes):          0x7d2  (2002)
+                 Maximum dynamic memory (bytes):          0x7d0  (2000)
 
 Info: Project is using a large data memory model when small data memory model is sufficient.
 
@@ -138,18 +138,19 @@ External Symbols in Data Memory (by address):
                     0x080c                  _finished
                     0x080e                  _ball
                     0x0810                  _doneIR
-                    0x0812                  _roveState
-                    0x0814                  _lineFollowingState
-                    0x0816                  _taskDetectionState
-                    0x0818                  _canyonState
-                    0x081a                  _sampleState
-                    0x081c                  _startState
-                    0x081e                  _getBallState
-                    0x0820                  _serviceState
-                    0x0822                  _endState
-                    0x0824                  _turnCoeff
-                    0x0828                  _forwardCoeff
-                    0x082c                  _nextTask
+                    0x0812                  _doneCanyon
+                    0x0814                  _roveState
+                    0x0816                  _lineFollowingState
+                    0x0818                  _taskDetectionState
+                    0x081a                  _canyonState
+                    0x081c                  _sampleState
+                    0x081e                  _startState
+                    0x0820                  _getBallState
+                    0x0822                  _serviceState
+                    0x0824                  _endState
+                    0x0826                  _turnCoeff
+                    0x082a                  _forwardCoeff
+                    0x082e                  _nextTask
 
 External Symbols in Data Memory (by name):
 
@@ -157,23 +158,24 @@ External Symbols in Data Memory (by name):
                     0x0802                  _OC2Steps
                     0x0804                  _OC3Steps
                     0x080e                  _ball
-                    0x0818                  _canyonState
+                    0x081a                  _canyonState
+                    0x0812                  _doneCanyon
                     0x0810                  _doneIR
-                    0x0822                  _endState
+                    0x0824                  _endState
                     0x080c                  _finished
-                    0x0828                  _forwardCoeff
-                    0x081e                  _getBallState
+                    0x082a                  _forwardCoeff
+                    0x0820                  _getBallState
                     0x0808                  _lineCount
-                    0x0814                  _lineFollowingState
-                    0x082c                  _nextTask
+                    0x0816                  _lineFollowingState
+                    0x082e                  _nextTask
                     0x080a                  _prevState
-                    0x0812                  _roveState
-                    0x081a                  _sampleState
-                    0x0820                  _serviceState
-                    0x081c                  _startState
+                    0x0814                  _roveState
+                    0x081c                  _sampleState
+                    0x0822                  _serviceState
+                    0x081e                  _startState
                     0x0806                  _stepsToTake
-                    0x0816                  _taskDetectionState
-                    0x0824                  _turnCoeff
+                    0x0818                  _taskDetectionState
+                    0x0826                  _turnCoeff
 
 External Symbols in Program Memory (by address):
 
@@ -247,16 +249,16 @@ External Symbols in Program Memory (by address):
                   0x000c8a                  _findSat
                   0x000d00                  _main
                   0x000d38                  _roveFSM
-                  0x000e68                  _lineFollowingFSM
-                  0x001046                  _taskDetectionFSM
-                  0x0010c6                  _canyonNavigationFSM
-                  0x00118c                  _sampleReturnFSM
-                  0x00121a                  _startFSM
-                  0x001254                  _getBallFSM
-                  0x00132e                  _serviceFSM
-                  0x0013d6                  _returnToLanderFSM
-                  0x001456                  _tankTurn
-                  0x0014bc                  _goForward
+                  0x000e66                  _lineFollowingFSM
+                  0x001044                  _taskDetectionFSM
+                  0x0010c4                  _canyonNavigationFSM
+                  0x00118e                  _sampleReturnFSM
+                  0x00121c                  _startFSM
+                  0x001256                  _getBallFSM
+                  0x001330                  _serviceFSM
+                  0x0013d8                  _returnToLanderFSM
+                  0x001458                  _tankTurn
+                  0x0014be                  _goForward
 
 External Symbols in Program Memory (by name):
 
@@ -293,7 +295,7 @@ External Symbols in Program Memory (by name):
                   0x0006f0                  __unpackdnrmf
                   0x000c0c                  _adjRL
                   0x000a6a                  _ballQRD
-                  0x0010c6                  _canyonNavigationFSM
+                  0x0010c4                  _canyonNavigationFSM
                   0x000ada                  _canyonStraight
                   0x000bb6                  _catchBall
                   0x000ba8                  _closeGate
@@ -301,24 +303,24 @@ External Symbols in Program Memory (by name):
                   0x000ac0                  _driveStraight
                   0x000a9e                  _exitCanyonQRD
                   0x000c8a                  _findSat
-                  0x001254                  _getBallFSM
-                  0x0014bc                  _goForward
+                  0x001256                  _getBallFSM
+                  0x0014be                  _goForward
                   0x000b42                  _hardLeft
                   0x000b28                  _hardRight
                   0x000a84                  _landerQRD
                   0x000a36                  _leftQRD
-                  0x000e68                  _lineFollowingFSM
+                  0x000e66                  _lineFollowingFSM
                   0x000d00                  _main
                   0x000a1c                  _midQRD
                   0x000c76                  _moveServo
                   0x000b9a                  _openGate
                   0x000ab8                  _photodiode
-                  0x0013d6                  _returnToLanderFSM
+                  0x0013d8                  _returnToLanderFSM
                   0x000a02                  _rightQRD
                   0x000d38                  _roveFSM
-                  0x00118c                  _sampleReturnFSM
+                  0x00118e                  _sampleReturnFSM
                   0x000b6a                  _search
-                  0x00132e                  _serviceFSM
+                  0x001330                  _serviceFSM
                   0x000920                  _setupADC
                   0x0009de                  _setupDebugLED
                   0x00099c                  _setupDistanceSensors
@@ -331,11 +333,11 @@ External Symbols in Program Memory (by name):
                   0x00090c                  _setupTimer
                   0x000b0e                  _slightLeft
                   0x000af4                  _slightRight
-                  0x00121a                  _startFSM
+                  0x00121c                  _startFSM
                   0x000b5c                  _stop
                   0x000bc4                  _stopServo
-                  0x001456                  _tankTurn
-                  0x001046                  _taskDetectionFSM
+                  0x001458                  _tankTurn
+                  0x001044                  _taskDetectionFSM
                   0x000a50                  _taskdetectionQRD
                   0x000bd6                  _turnOffLaser
                   0x000994                  _turnOnADC
@@ -492,26 +494,26 @@ __FDS
 .comment
  *(.comment)
 
-.debug_info       0x000000       0x3e6c
+.debug_info       0x000000       0x3e8b
  *(.debug_info)
- .debug_info      0x000000       0x3499 build/default/production/main.o
- .debug_info      0x003499         0x8b c:/program files/microchip/xc16/v2.00/bin/bin/../../lib\libc99-pic30-elf.a(fgtge.XX_o)
- .debug_info      0x003524         0x8d c:/program files/microchip/xc16/v2.00/bin/bin/../../lib\libc99-pic30-elf.a(fixsfsi.XX_o)
- .debug_info      0x0035b1         0x90 c:/program files/microchip/xc16/v2.00/bin/bin/../../lib\libc99-pic30-elf.a(fixunssfsi.XX_o)
- .debug_info      0x003641         0x8f c:/program files/microchip/xc16/v2.00/bin/bin/../../lib\libc99-pic30-elf.a(floatsisf.XX_o)
- .debug_info      0x0036d0         0x91 c:/program files/microchip/xc16/v2.00/bin/bin/../../lib\libc99-pic30-elf.a(floatunsisf.XX_o)
- .debug_info      0x003761         0x8d c:/program files/microchip/xc16/v2.00/bin/bin/../../lib\libc99-pic30-elf.a(funpack.XX_o)
- .debug_info      0x0037ee         0x9d c:/program files/microchip/xc16/v2.00/bin/bin/../../lib\libc99-pic30-elf.a(addsf3x.XX_o)
- .debug_info      0x00388b         0x9d c:/program files/microchip/xc16/v2.00/bin/bin/../../lib\libc99-pic30-elf.a(mulsf3x.XX_o)
- .debug_info      0x003928         0xa0 c:/program files/microchip/xc16/v2.00/bin/bin/../../lib\libc99-pic30-elf.a(dnrmpackfx.XX_o)
- .debug_info      0x0039c8         0xa2 c:/program files/microchip/xc16/v2.00/bin/bin/../../lib\libc99-pic30-elf.a(unpackdnrmfx.XX_o)
- .debug_info      0x003a6a         0x9c c:/program files/microchip/xc16/v2.00/bin/bin/../../lib\libc99-pic30-elf.a(typefx.XX_o)
- .debug_info      0x003b06         0x9f c:/program files/microchip/xc16/v2.00/bin/bin/../../lib\libc99-pic30-elf.a(propnanfx.XX_o)
- .debug_info      0x003ba5         0x8e c:/program files/microchip/xc16/v2.00/bin/bin/../../lib\libc99-pic30-elf.a(fcompare.XX_o)
- .debug_info      0x003c33         0x8f c:/program files/microchip/xc16/v2.00/bin/bin/../../lib\libc99-pic30-elf.a(floatdisf.XX_o)
- .debug_info      0x003cc2         0x91 c:/program files/microchip/xc16/v2.00/bin/bin/../../lib\libc99-pic30-elf.a(floatundisf.XX_o)
- .debug_info      0x003d53         0x8b c:/program files/microchip/xc16/v2.00/bin/bin/../../lib\libc99-pic30-elf.a(fpack.XX_o)
- .debug_info      0x003dde         0x8e c:/program files/microchip/xc16/v2.00/bin/bin/../../lib\libc99-pic30-elf.a(funpack2.XX_o)
+ .debug_info      0x000000       0x34b8 build/default/production/main.o
+ .debug_info      0x0034b8         0x8b c:/program files/microchip/xc16/v2.00/bin/bin/../../lib\libc99-pic30-elf.a(fgtge.XX_o)
+ .debug_info      0x003543         0x8d c:/program files/microchip/xc16/v2.00/bin/bin/../../lib\libc99-pic30-elf.a(fixsfsi.XX_o)
+ .debug_info      0x0035d0         0x90 c:/program files/microchip/xc16/v2.00/bin/bin/../../lib\libc99-pic30-elf.a(fixunssfsi.XX_o)
+ .debug_info      0x003660         0x8f c:/program files/microchip/xc16/v2.00/bin/bin/../../lib\libc99-pic30-elf.a(floatsisf.XX_o)
+ .debug_info      0x0036ef         0x91 c:/program files/microchip/xc16/v2.00/bin/bin/../../lib\libc99-pic30-elf.a(floatunsisf.XX_o)
+ .debug_info      0x003780         0x8d c:/program files/microchip/xc16/v2.00/bin/bin/../../lib\libc99-pic30-elf.a(funpack.XX_o)
+ .debug_info      0x00380d         0x9d c:/program files/microchip/xc16/v2.00/bin/bin/../../lib\libc99-pic30-elf.a(addsf3x.XX_o)
+ .debug_info      0x0038aa         0x9d c:/program files/microchip/xc16/v2.00/bin/bin/../../lib\libc99-pic30-elf.a(mulsf3x.XX_o)
+ .debug_info      0x003947         0xa0 c:/program files/microchip/xc16/v2.00/bin/bin/../../lib\libc99-pic30-elf.a(dnrmpackfx.XX_o)
+ .debug_info      0x0039e7         0xa2 c:/program files/microchip/xc16/v2.00/bin/bin/../../lib\libc99-pic30-elf.a(unpackdnrmfx.XX_o)
+ .debug_info      0x003a89         0x9c c:/program files/microchip/xc16/v2.00/bin/bin/../../lib\libc99-pic30-elf.a(typefx.XX_o)
+ .debug_info      0x003b25         0x9f c:/program files/microchip/xc16/v2.00/bin/bin/../../lib\libc99-pic30-elf.a(propnanfx.XX_o)
+ .debug_info      0x003bc4         0x8e c:/program files/microchip/xc16/v2.00/bin/bin/../../lib\libc99-pic30-elf.a(fcompare.XX_o)
+ .debug_info      0x003c52         0x8f c:/program files/microchip/xc16/v2.00/bin/bin/../../lib\libc99-pic30-elf.a(floatdisf.XX_o)
+ .debug_info      0x003ce1         0x91 c:/program files/microchip/xc16/v2.00/bin/bin/../../lib\libc99-pic30-elf.a(floatundisf.XX_o)
+ .debug_info      0x003d72         0x8b c:/program files/microchip/xc16/v2.00/bin/bin/../../lib\libc99-pic30-elf.a(fpack.XX_o)
+ .debug_info      0x003dfd         0x8e c:/program files/microchip/xc16/v2.00/bin/bin/../../lib\libc99-pic30-elf.a(funpack2.XX_o)
  *(.gnu.linkonce.wi.*)
 
 .debug_abbrev     0x000000        0x361
@@ -535,34 +537,34 @@ __FDS
  .debug_abbrev    0x000339         0x14 c:/program files/microchip/xc16/v2.00/bin/bin/../../lib\libc99-pic30-elf.a(fpack.XX_o)
  .debug_abbrev    0x00034d         0x14 c:/program files/microchip/xc16/v2.00/bin/bin/../../lib\libc99-pic30-elf.a(funpack2.XX_o)
 
-.debug_line       0x000000        0xbb5
+.debug_line       0x000000        0xbb9
  *(.debug_line)
- .debug_line      0x000000        0x4dd build/default/production/main.o
- .debug_line      0x0004dd         0x35 c:/program files/microchip/xc16/v2.00/bin/bin/../../lib\libc99-pic30-elf.a(fgtge.XX_o)
- .debug_line      0x000512         0x56 c:/program files/microchip/xc16/v2.00/bin/bin/../../lib\libc99-pic30-elf.a(fixsfsi.XX_o)
- .debug_line      0x000568         0x53 c:/program files/microchip/xc16/v2.00/bin/bin/../../lib\libc99-pic30-elf.a(fixunssfsi.XX_o)
- .debug_line      0x0005bb         0x3a c:/program files/microchip/xc16/v2.00/bin/bin/../../lib\libc99-pic30-elf.a(floatsisf.XX_o)
- .debug_line      0x0005f5         0x3b c:/program files/microchip/xc16/v2.00/bin/bin/../../lib\libc99-pic30-elf.a(floatunsisf.XX_o)
- .debug_line      0x000630         0x4a c:/program files/microchip/xc16/v2.00/bin/bin/../../lib\libc99-pic30-elf.a(funpack.XX_o)
- .debug_line      0x00067a        0x136 c:/program files/microchip/xc16/v2.00/bin/bin/../../lib\libc99-pic30-elf.a(addsf3x.XX_o)
- .debug_line      0x0007b0         0xcc c:/program files/microchip/xc16/v2.00/bin/bin/../../lib\libc99-pic30-elf.a(mulsf3x.XX_o)
- .debug_line      0x00087c         0x72 c:/program files/microchip/xc16/v2.00/bin/bin/../../lib\libc99-pic30-elf.a(dnrmpackfx.XX_o)
- .debug_line      0x0008ee         0x7a c:/program files/microchip/xc16/v2.00/bin/bin/../../lib\libc99-pic30-elf.a(unpackdnrmfx.XX_o)
- .debug_line      0x000968         0x5e c:/program files/microchip/xc16/v2.00/bin/bin/../../lib\libc99-pic30-elf.a(typefx.XX_o)
- .debug_line      0x0009c6         0x51 c:/program files/microchip/xc16/v2.00/bin/bin/../../lib\libc99-pic30-elf.a(propnanfx.XX_o)
- .debug_line      0x000a17         0x53 c:/program files/microchip/xc16/v2.00/bin/bin/../../lib\libc99-pic30-elf.a(fcompare.XX_o)
- .debug_line      0x000a6a         0x47 c:/program files/microchip/xc16/v2.00/bin/bin/../../lib\libc99-pic30-elf.a(floatdisf.XX_o)
- .debug_line      0x000ab1         0x6c c:/program files/microchip/xc16/v2.00/bin/bin/../../lib\libc99-pic30-elf.a(floatundisf.XX_o)
- .debug_line      0x000b1d         0x5a c:/program files/microchip/xc16/v2.00/bin/bin/../../lib\libc99-pic30-elf.a(fpack.XX_o)
- .debug_line      0x000b77         0x3e c:/program files/microchip/xc16/v2.00/bin/bin/../../lib\libc99-pic30-elf.a(funpack2.XX_o)
+ .debug_line      0x000000        0x4e1 build/default/production/main.o
+ .debug_line      0x0004e1         0x35 c:/program files/microchip/xc16/v2.00/bin/bin/../../lib\libc99-pic30-elf.a(fgtge.XX_o)
+ .debug_line      0x000516         0x56 c:/program files/microchip/xc16/v2.00/bin/bin/../../lib\libc99-pic30-elf.a(fixsfsi.XX_o)
+ .debug_line      0x00056c         0x53 c:/program files/microchip/xc16/v2.00/bin/bin/../../lib\libc99-pic30-elf.a(fixunssfsi.XX_o)
+ .debug_line      0x0005bf         0x3a c:/program files/microchip/xc16/v2.00/bin/bin/../../lib\libc99-pic30-elf.a(floatsisf.XX_o)
+ .debug_line      0x0005f9         0x3b c:/program files/microchip/xc16/v2.00/bin/bin/../../lib\libc99-pic30-elf.a(floatunsisf.XX_o)
+ .debug_line      0x000634         0x4a c:/program files/microchip/xc16/v2.00/bin/bin/../../lib\libc99-pic30-elf.a(funpack.XX_o)
+ .debug_line      0x00067e        0x136 c:/program files/microchip/xc16/v2.00/bin/bin/../../lib\libc99-pic30-elf.a(addsf3x.XX_o)
+ .debug_line      0x0007b4         0xcc c:/program files/microchip/xc16/v2.00/bin/bin/../../lib\libc99-pic30-elf.a(mulsf3x.XX_o)
+ .debug_line      0x000880         0x72 c:/program files/microchip/xc16/v2.00/bin/bin/../../lib\libc99-pic30-elf.a(dnrmpackfx.XX_o)
+ .debug_line      0x0008f2         0x7a c:/program files/microchip/xc16/v2.00/bin/bin/../../lib\libc99-pic30-elf.a(unpackdnrmfx.XX_o)
+ .debug_line      0x00096c         0x5e c:/program files/microchip/xc16/v2.00/bin/bin/../../lib\libc99-pic30-elf.a(typefx.XX_o)
+ .debug_line      0x0009ca         0x51 c:/program files/microchip/xc16/v2.00/bin/bin/../../lib\libc99-pic30-elf.a(propnanfx.XX_o)
+ .debug_line      0x000a1b         0x53 c:/program files/microchip/xc16/v2.00/bin/bin/../../lib\libc99-pic30-elf.a(fcompare.XX_o)
+ .debug_line      0x000a6e         0x47 c:/program files/microchip/xc16/v2.00/bin/bin/../../lib\libc99-pic30-elf.a(floatdisf.XX_o)
+ .debug_line      0x000ab5         0x6c c:/program files/microchip/xc16/v2.00/bin/bin/../../lib\libc99-pic30-elf.a(floatundisf.XX_o)
+ .debug_line      0x000b21         0x5a c:/program files/microchip/xc16/v2.00/bin/bin/../../lib\libc99-pic30-elf.a(fpack.XX_o)
+ .debug_line      0x000b7b         0x3e c:/program files/microchip/xc16/v2.00/bin/bin/../../lib\libc99-pic30-elf.a(funpack2.XX_o)
 
 .debug_frame      0x000000        0x5b4
  *(.debug_frame)
  .debug_frame     0x000000        0x5b4 build/default/production/main.o
 
-.debug_str        0x000000        0x2e8
+.debug_str        0x000000        0x2f3
  *(.debug_str)
- .debug_str       0x000000        0x2e8 build/default/production/main.o
+ .debug_str       0x000000        0x2f3 build/default/production/main.o
 
 .debug_loc
  *(.debug_loc)
@@ -571,10 +573,10 @@ __FDS
  *(.debug_macinfo)
 
 .debug_pubnames
-                  0x000000        0x483
+                  0x000000        0x492
  *(.debug_pubnames)
  .debug_pubnames
-                  0x000000        0x483 build/default/production/main.o
+                  0x000000        0x492 build/default/production/main.o
 
 .debug_ranges
  *(.debug_ranges)
@@ -1271,8 +1273,8 @@ __c30_signature
  __c30_signature
                   0x000555          0x6 c:/program files/microchip/xc16/v2.00/bin/bin/../../lib\libc99-pic30-elf.a(funpack2.XX_o)
 
-.nbss               0x0800         0x24
- .nbss              0x0800         0x24 build/default/production/main.o
+.nbss               0x0800         0x26
+ .nbss              0x0800         0x26 build/default/production/main.o
                     0x0800                  _OC1Steps
                     0x0802                  _OC2Steps
                     0x0804                  _OC3Steps
@@ -1282,21 +1284,22 @@ __c30_signature
                     0x080c                  _finished
                     0x080e                  _ball
                     0x0810                  _doneIR
-                    0x0812                  _roveState
-                    0x0814                  _lineFollowingState
-                    0x0816                  _taskDetectionState
-                    0x0818                  _canyonState
-                    0x081a                  _sampleState
-                    0x081c                  _startState
-                    0x081e                  _getBallState
-                    0x0820                  _serviceState
-                    0x0822                  _endState
+                    0x0812                  _doneCanyon
+                    0x0814                  _roveState
+                    0x0816                  _lineFollowingState
+                    0x0818                  _taskDetectionState
+                    0x081a                  _canyonState
+                    0x081c                  _sampleState
+                    0x081e                  _startState
+                    0x0820                  _getBallState
+                    0x0822                  _serviceState
+                    0x0824                  _endState
 
-.ndata              0x0824          0xa
- .ndata             0x0824          0xa build/default/production/main.o
-                    0x0824                  _turnCoeff
-                    0x0828                  _forwardCoeff
-                    0x082c                  _nextTask
+.ndata              0x0826          0xa
+ .ndata             0x0826          0xa build/default/production/main.o
+                    0x0826                  _turnCoeff
+                    0x082a                  _forwardCoeff
+                    0x082e                  _nextTask
 
 .config_IESO      0xf80006          0x2
  .config_IESO     0xf80006          0x2 build/default/production/main.o
@@ -1316,8 +1319,8 @@ __c30_signature
  .ivt._OC3Interrupt
                   0x000046          0x2 build/default/production/main.o
 
-.text             0x0008a4        0xc62
- .text            0x0008a4        0xc62 build/default/production/main.o
+.text             0x0008a4        0xc64
+ .text            0x0008a4        0xc64 build/default/production/main.o
                   0x0008a4                  _setupSteppers
                   0x00090c                  _setupTimer
                   0x000920                  _setupADC
@@ -1358,16 +1361,16 @@ __c30_signature
                   0x000c8a                  _findSat
                   0x000d00                  _main
                   0x000d38                  _roveFSM
-                  0x000e68                  _lineFollowingFSM
-                  0x001046                  _taskDetectionFSM
-                  0x0010c6                  _canyonNavigationFSM
-                  0x00118c                  _sampleReturnFSM
-                  0x00121a                  _startFSM
-                  0x001254                  _getBallFSM
-                  0x00132e                  _serviceFSM
-                  0x0013d6                  _returnToLanderFSM
-                  0x001456                  _tankTurn
-                  0x0014bc                  _goForward
+                  0x000e66                  _lineFollowingFSM
+                  0x001044                  _taskDetectionFSM
+                  0x0010c4                  _canyonNavigationFSM
+                  0x00118e                  _sampleReturnFSM
+                  0x00121c                  _startFSM
+                  0x001256                  _getBallFSM
+                  0x001330                  _serviceFSM
+                  0x0013d8                  _returnToLanderFSM
+                  0x001458                  _tankTurn
+                  0x0014be                  _goForward
 
-.dinit            0x001506         0x16
- .dinit           0x001506         0x16 data_init
+.dinit            0x001508         0x16
+ .dinit           0x001508         0x16 data_init

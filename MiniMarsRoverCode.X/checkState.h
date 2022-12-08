@@ -3,9 +3,9 @@
 
 #include <xc.h> 
 #define THRESHOLD 2000
-#define TASKDETECT 3000
+#define TASKDETECT 3200
 #define CANYONTHRESHOLD 3000
-#define LANDERTHRESHOLD 3000
+#define LANDERTHRESHOLD 2800
 
 int rightQRD(){
     int onOffr;
