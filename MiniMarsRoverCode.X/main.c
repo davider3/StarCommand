@@ -23,10 +23,10 @@
 #define FRONTSENSOR !_RA4
 #define LEFTSENSOR !_RB4
 #define LIMIT 100
-#define LANDERDISTANCE 620 //mm
+#define LANDERDISTANCE 500 //mm
 #define APPROACHDIS 230 //mm
-#define PASSLINEDIS 170 //mm
-#define DROPBALLDIS 150 //mm
+#define PASSLINEDIS 190 //mm
+#define DROPBALLDIS 135 //mm
 #define CANYONEXITDIS 70 //mm
 #define RAMMINGSPEED 6000
 
@@ -54,7 +54,7 @@ enum {GETLINEDUP, SPIN, OPENGATE, SPINBACK} sampleState;
 enum {FORWARD, TURN} startState;
 enum {ALIGN, DELAY, RIGHT, APPROACH, CATCH, BACKUP, LEFT} getBallState;
 enum {STOP, TURNING, GOTOPUSH, BACKITUP, TURNBACK} serviceState;
-enum {HOLDIT, TURNIN, RETURN, SWEEP, END} endState;
+enum {HOLDIT, TURNIN, LINE, RAM, REVERSE, HOLDIT2, SWIVEL, SWEEP, END} endState;
 
 //FUNCTION PROTOTYPES
 //FINITE STATE MACHINES
@@ -110,7 +110,7 @@ int main(void) {
     closeGate();
     
     while(1){
-        
+
         roveFSM();
         
 //        if(landerQRD()){
@@ -170,7 +170,7 @@ void roveFSM(){
                     goForward(DROPBALLDIS, 1);
                 }else if(nextTask == 4){
                     roveState = CANYONNAVIGATION;
-                    goForward(150, 1);
+                    ramming(150, 1);
                 }
             }else if(SERVICEDETECTOR && !doneIR && doneCanyon){
                 doneIR = 1;
@@ -435,9 +435,9 @@ void canyonNavigationFSM(){
             if(FRONTSENSOR){
                 canyonState = WALLDETECTED;
                 if(LEFTSENSOR){
-                    tankTurn(90, CW);
+                    tankTurn(88, CW);
                 }else{
-                    tankTurn(90, CCW);
+                    tankTurn(88, CCW);
                 }
             }
             else if(exitCanyonQRD()){
@@ -459,9 +459,9 @@ void canyonNavigationFSM(){
             if(OC2Steps >= stepsToTake){
                 canyonState = EXIT;
                 if(LEFTSENSOR){
-                    tankTurn(90, CW);
+                    tankTurn(88, CW);
                 }else{
-                    tankTurn(90, CCW);
+                    tankTurn(88, CCW);
                 }
             }
             break;
@@ -560,7 +560,7 @@ void getBallFSM(){
             
             if(TMR1 > .2*ONESEC){
                 getBallState = RIGHT;
-                tankTurn(88, CW);
+                tankTurn(85, CW);
             } 
             break;
             
@@ -568,7 +568,7 @@ void getBallFSM(){
             
             if(OC2Steps >= stepsToTake){
                 getBallState = APPROACH;
-                goForward(APPROACHDIS, 1);
+                ramming(APPROACHDIS, 1);
             }
             break;
             
@@ -660,44 +660,74 @@ void returnToLanderFSM(){
         
         case HOLDIT:
 
-            if(TMR1 >= .2*ONESEC){
-                tankTurn(86, CW);
+            if(TMR1 >= .3*ONESEC){
+                tankTurn(90, CCW);
                 endState = TURNIN;
             }    
             break;
-
+            
         case TURNIN:
+            
             if(OC2Steps >= stepsToTake){
-                endState = RETURN;
-                goForward(LANDERDISTANCE, 0);
+                endState = LINE;
+                stop();
             }
             break;
-
-        case RETURN:
+            
+        case LINE:
+            lineFollowingFSM();
+            if(FRONTSENSOR){
+                driveStraight();
+                TMR1 = 0;
+                endState = RAM;
+            }
+            break;
+            
+        case RAM:
+            
+            if(TMR1 >= .3*ONESEC){
+                ramming(50, 0);
+                endState = REVERSE;
+            }
+            break;
+            
+        case REVERSE:
+            
+            if(OC2Steps >= stepsToTake){
+                stop();
+                endState = HOLDIT2;
+                TMR1 = 0;
+            }
+            break;
+            
+        case HOLDIT2:
+            
+            if(TMR1 >= .2*ONESEC){
+                endState = SWIVEL;
+                tankTurn(170, CW);
+            }
+            break;
+            
+        case SWIVEL:
+            
             if(OC2Steps >= stepsToTake){
                 endState = SWEEP;
                 stop();
-            }        
+            }
             break;
-
+            
         case SWEEP:
-//            if(photodiode() < 1200){
-//                turnOffLaser(); 
-//                IRSearch();
-//            }else{
-//                turnOnLaser();
-//                endState = END;
-//            }
             
             findSat();
             turnOnLaser();
             endState = END;
             
             break;
-
+            
         case END:
-
+            
             break;
+        
     }
     
 }
@@ -754,10 +784,10 @@ void ramming(int mmDis, int dir){
     _OC2IE = 1;
     
     //SET PERIOD AND DUTY CYCLE
-    OC2RS = FORWARDSPEED;
-    OC2R = FORWARDSPEED/2;
-    OC3RS = FORWARDSPEED;
-    OC3R = FORWARDSPEED/2;
+    OC2RS = RAMMINGSPEED;
+    OC2R = RAMMINGSPEED/2;
+    OC3RS = RAMMINGSPEED;
+    OC3R = RAMMINGSPEED/2;
     
     //WRITE TO DIRECTION PINS
     //1 IS FORWARD, 0 IS REVERSE

@@ -216,19 +216,18 @@ void findSat(){
     TMR1 = 0;
     while(servoAngle >= CLOSESERVO){
         moveServo(servoAngle);
-        if(TMR1 >= .3*ONESEC){
+        if(TMR1 >= .2*ONESEC){
             TMR1 = 0;
             if(photodiode() > maxSat){
                 maxSat = photodiode();
                 bestAngle = servoAngle;
             }
-            servoAngle -= .2;
+            servoAngle -= .05;
         }
     }
     
     moveServo(bestAngle);
 }
-
 
 
 
