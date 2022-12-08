@@ -110,12 +110,8 @@ int main(void) {
     closeGate();
     
     while(1){
-
-        roveFSM();
         
-//        if(landerQRD()){
-//            debugLED(1);
-//        }else debugLED(0);
+        roveFSM();
         
     }
     
