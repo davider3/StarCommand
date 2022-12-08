@@ -112,7 +112,6 @@ int main(void) {
     while(1){
         
         roveFSM();
-        
     }
     
     return 0;
@@ -673,7 +672,7 @@ void returnToLanderFSM(){
         case LINE:
             lineFollowingFSM();
             if(FRONTSENSOR){
-                driveStraight();
+                ramming(150, 1);
                 TMR1 = 0;
                 endState = RAM;
             }
@@ -681,7 +680,7 @@ void returnToLanderFSM(){
             
         case RAM:
             
-            if(TMR1 >= .3*ONESEC){
+            if(TMR1 >= .4*ONESEC){
                 ramming(50, 0);
                 endState = REVERSE;
             }
@@ -698,9 +697,9 @@ void returnToLanderFSM(){
             
         case HOLDIT2:
             
-            if(TMR1 >= .2*ONESEC){
+            if(TMR1 >= .3*ONESEC){
                 endState = SWIVEL;
-                tankTurn(170, CW);
+                tankTurn(176, CW);
             }
             break;
             
